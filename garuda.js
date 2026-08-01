@@ -3,28 +3,28 @@ EmbedBuilder,
 ActionRowBuilder,
 ButtonBuilder,
 ButtonStyle
-} = require("discord.js");
+}=require("discord.js");
 
 const {
 events,
 addPoint,
 removePoint,
 saveEvents
-} = require("./database");
+}=require("./database");
 
 const {
 randomReward
-} = require("./utils");
+}=require("./utils");
 
-let claimed = new Set();
+let active=false;
 
-let active = false;
+let claimed=new Set();
 
-class GarudaEvent{
+class Garuda{
 
 constructor(client){
 
-this.client = client;
+this.client=client;
 
 }
 
@@ -37,13 +37,15 @@ return new EmbedBuilder()
 .setTitle("🦅 GARUDA MUNCUL!")
 
 .setDescription(
+
 `🇮🇩 Garuda sedang melintas!
 
-Semua member boleh menangkap!
+Semua member boleh menangkap Garuda.
 
-⏳ Waktu : **30 detik**
+⏳ Waktu : **30 Detik**
 
 Klik tombol di bawah sebelum Garuda kabur!`
+
 )
 
 .setFooter({
@@ -66,9 +68,9 @@ new ButtonBuilder()
 
 .setCustomId("garuda")
 
-.setLabel("🦅 Tangkap Garuda")
-
 .setStyle(ButtonStyle.Danger)
+
+.setLabel("🦅 Tangkap Garuda")
 
 );
 
@@ -83,9 +85,9 @@ process.env.EVENT_CHANNEL
 
 );
 
-claimed.clear();
-
 active=true;
+
+claimed.clear();
 
 if(events.garudaMessage){
 
@@ -101,7 +103,7 @@ events.garudaMessage
 
 await old.delete();
 
-}catch{}
+}catch(err){}
 
 }
 
@@ -118,6 +120,7 @@ components:[this.button()]
 events.garudaMessage=msg.id;
 
 saveEvents();
+
 setTimeout(async()=>{
 
 active=false;
@@ -126,7 +129,11 @@ try{
 
 const message=
 
-await channel.messages.fetch(msg.id);
+await channel.messages.fetch(
+
+msg.id
+
+);
 
 await message.edit({
 
@@ -134,7 +141,7 @@ components:[]
 
 });
 
-}catch{}
+}catch(err){}
 
 },30000);
 
@@ -202,7 +209,8 @@ Math.abs(reward.point)
 );
 
 }
-    const log=
+
+const log=
 
 await this.client.channels.fetch(
 
@@ -218,15 +226,19 @@ new EmbedBuilder()
 
 .setColor(
 
-reward.point>=0?
+reward.point>=0
 
-0x57F287:
+?0x57F287
 
-0xED4245
+:0xED4245
 
 )
 
-.setTitle(`${reward.emoji} ${interaction.user.username}`)
+.setTitle(
+
+`${reward.emoji} ${interaction.user.username}`
+
+)
 
 .setDescription(
 
@@ -234,7 +246,7 @@ reward.point>=0?
 
 **${reward.point>=0?"+":""}${reward.point} poin**
 
-Total poin : **${user.points}**`
+🏆 Total Poin : **${user.points}**`
 
 )
 
@@ -243,7 +255,8 @@ Total poin : **${user.points}**`
 ]
 
 });
-    await interaction.reply({
+
+await interaction.reply({
 
 content:
 
@@ -251,83 +264,28 @@ content:
 
 ${reward.point>=0?"+":""}${reward.point} poin
 
-Total poin kamu : ${user.points}`,
+🏆 Total poin kamu : ${user.points}`,
 
 ephemeral:true
 
 });
 
-}
+  }
+  start(){
 
-}
-
-module.exports=GarudaEvent;
-// ======================
-// RANDOM TIME
-// ======================
-
-schedule(){
-
-const now=new Date();
-
-const tomorrow=new Date();
-
-tomorrow.setDate(now.getDate()+1);
-
-tomorrow.setHours(0,0,0,0);
-
-const list=[];
-
-for(let i=0;i<20;i++){
-
-const minute=
-
-Math.floor(
-
-Math.random()*1440
-
-);
-
-list.push(minute);
-
-}
-
-list.sort((a,b)=>a-b);
-
-this.times=list;
-
-console.log("Garuda Schedule");
-
-console.log(list);
-
-
-}
-start(){
-
-this.schedule();
-
-this.loop();
-
-}
-loop(){
-
-setInterval(()=>{
-
-const now=new Date();
-
-const minute=
-
-now.getHours()*60+
-
-now.getMinutes();
-
-if(this.times.includes(minute)){
-
+// Tes dulu, nanti kita ubah menjadi 20x per hari
 this.spawn();
 
 }
 
-},30000);
+schedule(){
+
+// Placeholder
+// Nanti kita isi scheduler 20x sehari
+// setelah Garuda berhasil jalan
 
 }
-module.exports=GarudaEvent;
+
+}
+
+module.exports=Garuda;
