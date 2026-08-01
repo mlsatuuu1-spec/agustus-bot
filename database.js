@@ -1,15 +1,14 @@
 const fs = require("fs");
 const path = require("path");
 
-const DATA_PATH = "/data";
+const DATA_DIR = "/data";
 
-if (!fs.existsSync(DATA_PATH)) {
-    fs.mkdirSync(DATA_PATH, { recursive: true });
+if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-const USERS_FILE = path.join(DATA_PATH, "users.json");
-const EVENTS_FILE = path.join(DATA_PATH, "events.json");
-const LEADERBOARD_FILE = path.join(DATA_PATH, "leaderboard.json");
+const USERS = path.join(DATA_DIR, "users.json");
+const EVENTS = path.join(DATA_DIR, "events.json");
 
 function create(file, data) {
     if (!fs.existsSync(file)) {
@@ -17,59 +16,43 @@ function create(file, data) {
     }
 }
 
-create(USERS_FILE, {
+create(USERS, {
     users: {}
 });
 
-create(EVENTS_FILE, {
+create(EVENTS, {
     garudaMessage: null,
-    upacaraMessage: null,
-    monumentMessage: null,
-    comboMessage: null,
+    garudaSchedule: [],
     currentMonument: 0,
-    progress: 0,
-    lastGaruda: 0,
-    lastUpacara: 0,
-    lastLeaderboard: 0
-});
-
-create(LEADERBOARD_FILE, {
-    messageId: null
+    monumentProgress: 0,
+    combo: null,
+    lastSchedule: null
 });
 
 function load(file) {
     return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
-let users = load(USERS_FILE);
-let events = load(EVENTS_FILE);
-let leaderboard = load(LEADERBOARD_FILE);
+let users = load(USERS);
+let events = load(EVENTS);
 
 function saveUsers() {
     fs.writeFileSync(
-        USERS_FILE,
+        USERS,
         JSON.stringify(users, null, 2)
     );
 }
 
 function saveEvents() {
     fs.writeFileSync(
-        EVENTS_FILE,
+        EVENTS,
         JSON.stringify(events, null, 2)
-    );
-}
-
-function saveLeaderboard() {
-    fs.writeFileSync(
-        LEADERBOARD_FILE,
-        JSON.stringify(leaderboard, null, 2)
     );
 }
 
 function saveAll() {
     saveUsers();
     saveEvents();
-    saveLeaderboard();
 }
 
 function getUser(id, username) {
@@ -86,9 +69,9 @@ function getUser(id, username) {
 
             garuda: 0,
 
-            upacara: 0,
-
             build: 0,
+
+            upacara: 0,
 
             combo: 0,
 
@@ -98,7 +81,7 @@ function getUser(id, username) {
 
             lastBuild: 0,
 
-            join: Date.now()
+            created: Date.now()
 
         };
 
@@ -120,9 +103,9 @@ function addPoint(id, username, point) {
 
         user.exp += point;
 
-        while (user.exp >= user.level * 25) {
+        while (user.exp >= user.level * 30) {
 
-            user.exp -= user.level * 25;
+            user.exp -= user.level * 30;
 
             user.level++;
 
@@ -151,7 +134,7 @@ function removePoint(id, username, point) {
 
 }
 
-function leaderboardData() {
+function leaderboard() {
 
     return Object.values(users.users)
 
@@ -165,7 +148,11 @@ module.exports = {
 
     events,
 
-    leaderboard,
+    saveUsers,
+
+    saveEvents,
+
+    saveAll,
 
     getUser,
 
@@ -173,14 +160,6 @@ module.exports = {
 
     removePoint,
 
-    leaderboardData,
-
-    saveUsers,
-
-    saveEvents,
-
-    saveLeaderboard,
-
-    saveAll
+    leaderboard
 
 };
