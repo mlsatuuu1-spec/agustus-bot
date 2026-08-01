@@ -1,99 +1,70 @@
 const {
-Client,
-GatewayIntentBits
-}=require("discord.js");
+    Client,
+    GatewayIntentBits
+} = require("discord.js");
 
-const Garuda=require("./garuda");
+require("./database");
 
-const client=new Client({
+const Garuda = require("./garuda");
 
-intents:[
-
-GatewayIntentBits.Guilds
-
-]
-
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds
+    ]
 });
 
-const garuda=
+// ======================
+// EVENT
+// ======================
 
-new Garuda(client);
+const garuda = new Garuda(client);
 
 // ======================
 // READY
 // ======================
 
-client.once("ready",()=>{
+client.once("ready", async () => {
 
-console.log(
+    console.log("================================");
 
-`✅ ${client.user.tag} Online`
+    console.log(`✅ Login sebagai ${client.user.tag}`);
 
-);
+    console.log("🦅 Garuda Event Loaded");
 
-garuda.start();
+    console.log("================================");
+
+    garuda.start();
 
 });
 
 // ======================
-// BUTTON
+// INTERACTION
 // ======================
 
-client.on(
+client.on("interactionCreate", async interaction => {
 
-"interactionCreate",
+    try {
 
-async interaction=>{
+        await garuda.handle(interaction);
 
-await garuda.handle(
+    } catch (err) {
 
-interaction
+        console.error(err);
 
-);
+    }
 
 });
+
+// ======================
+// ERROR
+// ======================
+
+process.on("unhandledRejection", console.error);
+
+process.on("uncaughtException", console.error);
 
 // ======================
 // LOGIN
 // ======================
 
-client.login(
-
-process.env.TOKEN
-
-);
-const ANNOUNCEMENT_CHANNEL=process.env.ANNOUNCEMENT_CHANNEL;
-
-module.exports={
-
-client,
-
-TOKEN,
-
-CLIENT_ID,
-
-GUILD_ID,
-
-EVENT_CHANNEL,
-
-MONUMENT_CHANNEL,
-
-LEADERBOARD_CHANNEL,
-
-LOG_CHANNEL,
-
-ANNOUNCEMENT_CHANNEL,
-
-database,
-
-utils
-
-};
-
-client.once("ready",()=>{
-
-console.log(`${client.user.tag} Online`);
-
-});
-
-client.login(TOKEN);
+client.login(process.env.TOKEN);
