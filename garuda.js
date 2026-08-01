@@ -262,3 +262,72 @@ ephemeral:true
 }
 
 module.exports=GarudaEvent;
+// ======================
+// RANDOM TIME
+// ======================
+
+schedule(){
+
+const now=new Date();
+
+const tomorrow=new Date();
+
+tomorrow.setDate(now.getDate()+1);
+
+tomorrow.setHours(0,0,0,0);
+
+const list=[];
+
+for(let i=0;i<20;i++){
+
+const minute=
+
+Math.floor(
+
+Math.random()*1440
+
+);
+
+list.push(minute);
+
+}
+
+list.sort((a,b)=>a-b);
+
+this.times=list;
+
+console.log("Garuda Schedule");
+
+console.log(list);
+
+
+}
+start(){
+
+this.schedule();
+
+this.loop();
+
+}
+loop(){
+
+setInterval(()=>{
+
+const now=new Date();
+
+const minute=
+
+now.getHours()*60+
+
+now.getMinutes();
+
+if(this.times.includes(minute)){
+
+this.spawn();
+
+}
+
+},30000);
+
+}
+module.exports=GarudaEvent;
