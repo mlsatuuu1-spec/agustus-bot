@@ -5,20 +5,9 @@ ButtonBuilder,
 ButtonStyle
 }=require("discord.js");
 
-const {
-events,
-addPoint,
-removePoint,
-saveEvents
-}=require("./database");
+const database=require("./database");
 
-const {
-randomReward
-}=require("./utils");
-
-let active=false;
-
-let claimed=new Set();
+const utils=require("./utils");
 
 class Garuda{
 
@@ -26,9 +15,29 @@ constructor(client){
 
 this.client=client;
 
+this.active=false;
+
+this.claimed=new Set();
+
+this.message=null;
+
+this.timeout=null;
+
+this.scheduler=null;
+
+this.today="";
+
+this.schedule=[];
+
+this.maxSpawn=20;
+
 }
 
-embed(){
+// =====================
+// BUILD EMBED
+// =====================
+
+buildEmbed(){
 
 return new EmbedBuilder()
 
@@ -38,19 +47,27 @@ return new EmbedBuilder()
 
 .setDescription(
 
-`🇮🇩 Garuda sedang melintas!
+`🇮🇩 **GARUDA TERBANG DI ATAS SERVER!**
 
-Semua member boleh menangkap Garuda.
+Tangkap Garuda sebelum kabur!
 
-⏳ Waktu : **30 Detik**
+👥 Semua member boleh ikut.
 
-Klik tombol di bawah sebelum Garuda kabur!`
+🎁 Hadiah bisa positif ataupun negatif.
+
+⏰ Event berlangsung **30 detik**.`
+
+)
+
+.setThumbnail(
+
+"https://cdn.discordapp.com/emojis/🦅.png"
 
 )
 
 .setFooter({
 
-text:"Event Kemerdekaan"
+text:"Event Kemerdekaan 2026"
 
 })
 
@@ -58,7 +75,11 @@ text:"Event Kemerdekaan"
 
 }
 
-button(){
+// =====================
+// BUTTON
+// =====================
+
+buildButton(){
 
 return new ActionRowBuilder()
 
@@ -68,14 +89,62 @@ new ButtonBuilder()
 
 .setCustomId("garuda")
 
-.setStyle(ButtonStyle.Danger)
+.setEmoji("🦅")
 
-.setLabel("🦅 Tangkap Garuda")
+.setLabel("Tangkap Garuda")
+
+.setStyle(ButtonStyle.Danger)
 
 );
 
 }
-  async spawn(){
+
+// =====================
+// RANDOM SCHEDULE
+// =====================
+
+generateSchedule(){
+
+const result=[];
+
+while(result.length<this.maxSpawn){
+
+const minute=
+
+Math.floor(
+
+Math.random()*1440
+
+);
+
+if(!result.includes(minute))
+
+result.push(minute);
+
+}
+
+result.sort((a,b)=>a-b);
+
+this.schedule=result;
+
+}
+
+// =====================
+// TODAY
+// =====================
+
+todayKey(){
+
+const now=new Date();
+
+return `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+
+}
+  // =====================
+// SPAWN GARUDA
+// =====================
+
+async spawn(){
 
 const channel=
 
@@ -85,11 +154,9 @@ process.env.EVENT_CHANNEL
 
 );
 
-active=true;
+// Hapus Garuda lama
 
-claimed.clear();
-
-if(events.garudaMessage){
+if(database.events.garudaMessage){
 
 try{
 
@@ -97,7 +164,7 @@ const old=
 
 await channel.messages.fetch(
 
-events.garudaMessage
+database.events.garudaMessage
 
 );
 
@@ -107,35 +174,59 @@ await old.delete();
 
 }
 
+// Reset event
+
+this.active=true;
+
+this.claimed.clear();
+
+// Kirim Garuda
+
 const msg=
 
 await channel.send({
 
-embeds:[this.embed()],
+content:"🚨 **GARUDA TERLIHAT!!**\n@everyone",
 
-components:[this.button()]
+embeds:[
+
+this.buildEmbed()
+
+],
+
+components:[
+
+this.buildButton()
+
+],
+
+allowedMentions:{
+
+parse:["everyone"]
+
+}
 
 });
 
-events.garudaMessage=msg.id;
+this.message=msg;
 
-saveEvents();
+database.events.garudaMessage=msg.id;
 
-setTimeout(async()=>{
+database.saveEvents();
 
-active=false;
+// Tutup otomatis
+
+clearTimeout(this.timeout);
+
+this.timeout=setTimeout(async()=>{
+
+this.active=false;
 
 try{
 
-const message=
+await msg.edit({
 
-await channel.messages.fetch(
-
-msg.id
-
-);
-
-await message.edit({
+content:"💨 Garuda berhasil kabur...",
 
 components:[]
 
@@ -145,18 +236,38 @@ components:[]
 
 },30000);
 
-  }
-  async handle(interaction){
+}
+  // =====================
+// START
+// =====================
+
+start(){
+
+console.log("🦅 Garuda Module Loaded");
+
+// Spawn pertama
+
+this.spawn();
+
+// Scheduler akan dibuat
+// di Part 3
+
+}
+  // =====================
+// HANDLE BUTTON
+// =====================
+
+async handle(interaction){
 
 if(!interaction.isButton()) return;
 
 if(interaction.customId!=="garuda") return;
 
-if(!active){
+if(!this.active){
 
 return interaction.reply({
 
-content:"🦅 Garuda sudah kabur.",
+content:"🦅 Garuda sudah kabur!",
 
 ephemeral:true
 
@@ -166,7 +277,7 @@ ephemeral:true
 
 const id=interaction.user.id;
 
-if(claimed.has(id)){
+if(this.claimed.has(id)){
 
 return interaction.reply({
 
@@ -178,15 +289,15 @@ ephemeral:true
 
 }
 
-claimed.add(id);
+this.claimed.add(id);
 
-const reward=randomReward();
+let reward=utils.randomReward();
 
 let user;
 
 if(reward.point>=0){
 
-user=addPoint(
+user=database.addPoint(
 
 id,
 
@@ -198,7 +309,7 @@ reward.point
 
 }else{
 
-user=removePoint(
+user=database.removePoint(
 
 id,
 
@@ -209,6 +320,16 @@ Math.abs(reward.point)
 );
 
 }
+
+// Statistik
+
+user.garuda=(user.garuda||0)+1;
+
+database.saveUsers();
+
+// Kirim Log
+
+try{
 
 const log=
 
@@ -234,11 +355,7 @@ reward.point>=0
 
 )
 
-.setTitle(
-
-`${reward.emoji} ${interaction.user.username}`
-
-)
+.setTitle(`${reward.emoji} ${interaction.user.username}`)
 
 .setDescription(
 
@@ -246,7 +363,7 @@ reward.point>=0
 
 **${reward.point>=0?"+":""}${reward.point} poin**
 
-🏆 Total Poin : **${user.points}**`
+🏆 Total : **${user.points} poin**`
 
 )
 
@@ -256,36 +373,322 @@ reward.point>=0
 
 });
 
+}catch(err){
+
+console.error(err);
+
+}
+
+// Reply
+
 await interaction.reply({
 
-content:
+ephemeral:true,
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor(
+
+reward.point>=0
+
+?0x57F287
+
+:0xED4245
+
+)
+
+.setTitle("🦅 Hasil Tangkapan")
+
+.setDescription(
 
 `${reward.text}
 
-${reward.point>=0?"+":""}${reward.point} poin
+**${reward.point>=0?"+":""}${reward.point} poin**
 
-🏆 Total poin kamu : ${user.points}`,
+🏆 Total poin : **${user.points}**`
 
-ephemeral:true
+)
+
+]
+
+});
+  await this.updateLeaderboard();
+
+}
+  // =====================
+// SCHEDULER
+// =====================
+
+startScheduler(){
+
+// Cek setiap 30 detik
+
+this.scheduler=setInterval(async()=>{
+
+const now=new Date();
+
+// Hari baru
+
+if(this.today!==this.todayKey()){
+
+this.today=this.todayKey();
+
+this.generateSchedule();
+
+console.log("🦅 Schedule Baru");
+
+console.log(this.schedule);
+
+}
+
+const minute=
+
+now.getHours()*60+
+
+now.getMinutes();
+
+if(
+
+this.schedule.includes(minute)&&
+
+!this.active
+
+){
+
+try{
+
+await this.spawn();
+
+}catch(err){
+
+console.error(err);
+
+}
+
+}
+
+},30000);
+
+}
+
+// =====================
+// START
+// =====================
+
+start(){
+
+console.log("🦅 Garuda Module Loaded");
+
+this.today=this.todayKey();
+
+this.generateSchedule();
+
+this.startScheduler();
+
+console.log(
+
+`📅 Total Spawn Hari Ini : ${this.schedule.length}`
+
+);
+
+}
+  // =====================
+// SPECIAL EVENT
+// =====================
+
+applySpecial(user,reward){
+
+const roll=Math.random()*100;
+
+// 👑 Golden Garuda (3%)
+
+if(roll<=3){
+
+reward={
+
+emoji:"👑",
+
+item:"Golden Garuda",
+
+point:10,
+
+text:"✨ **GOLDEN GARUDA!**\n\nKamu mendapat bonus +10 poin!"
+
+};
+
+}
+
+// ☠️ Garuda Sial (3%)
+
+else if(roll>=97){
+
+reward={
+
+emoji:"☠️",
+
+item:"Garuda Sial",
+
+point:-10,
+
+text:"💀 **GARUDA SIAL!**\n\nGaruda menjatuhkan tai super 😭"
+
+};
+
+}
+
+// 🌙 Night Bonus
+
+const hour=new Date().getHours();
+
+if(
+
+reward.point>0&&
+
+(hour>=22||hour<5)
+
+){
+
+reward.point*=2;
+
+reward.text+="\n\n🌙 Night Bonus x2";
+
+}
+
+// 🔥 Lucky Streak
+
+user.streak=user.streak||0;
+
+user.streak++;
+
+if(user.streak>=3){
+
+reward.point+=2;
+
+reward.text+="\n\n🔥 Lucky Streak +2 poin";
+
+user.streak=0;
+
+}
+
+return reward;
+
+}
+  // =====================
+// LEADERBOARD UPDATE
+// =====================
+
+async updateLeaderboard(){
+
+if(!process.env.LEADERBOARD_CHANNEL)
+
+return;
+
+try{
+
+const channel=
+
+await this.client.channels.fetch(
+
+process.env.LEADERBOARD_CHANNEL
+
+);
+
+const top=
+
+database.leaderboard()
+
+.slice(0,10);
+
+let desc="";
+
+if(top.length===0){
+
+desc="Belum ada data.";
+
+}else{
+
+top.forEach((u,i)=>{
+
+const medal=
+
+i===0?"🥇":
+
+i===1?"🥈":
+
+i===2?"🥉":
+
+`${i+1}.`;
+
+desc+=`${medal} **${u.username}** — ${u.points} poin\n`;
 
 });
 
-  }
-  start(){
+}
 
-// Tes dulu, nanti kita ubah menjadi 20x per hari
-this.spawn();
+const embed=
+
+new EmbedBuilder()
+
+.setColor("#F1C40F")
+
+.setTitle("🏆 LEADERBOARD")
+
+.setDescription(desc)
+
+.setTimestamp();
+
+if(database.events.leaderboardMessage){
+
+try{
+
+const msg=
+
+await channel.messages.fetch(
+
+database.events.leaderboardMessage
+
+);
+
+await msg.edit({
+
+embeds:[embed]
+
+});
+
+return;
+
+}catch(err){}
 
 }
 
-schedule(){
+const msg=
 
-// Placeholder
-// Nanti kita isi scheduler 20x sehari
-// setelah Garuda berhasil jalan
+await channel.send({
+
+embeds:[embed]
+
+});
+
+database.events.leaderboardMessage=
+
+msg.id;
+
+database.saveEvents();
+
+}catch(err){
+
+console.error(err);
 
 }
 
 }
+
+}
+
+// =====================
+// EXPORT
+// =====================
 
 module.exports=Garuda;
