@@ -177,6 +177,95 @@ null,
 );
 
 }
+// ======================
+// USER HELPER
+// ======================
+
+function getUser(userId, username){
+
+if(!users.users[userId]){
+
+users.users[userId]={
+
+id:userId,
+
+username:username,
+
+points:0,
+
+lastBuild:0,
+
+join:Date.now()
+
+};
+
+saveUsers();
+
+}
+
+return users.users[userId];
+
+}
+
+// ======================
+// POINT
+// ======================
+
+function addPoint(userId, username, amount){
+
+const user=getUser(userId,username);
+
+user.points+=amount;
+
+saveUsers();
+
+return user.points;
+
+}
+
+function removePoint(userId, username, amount){
+
+const user=getUser(userId,username);
+
+user.points-=amount;
+
+if(user.points<0)
+
+user.points=0;
+
+saveUsers();
+
+return user.points;
+
+}
+
+// ======================
+// LEADERBOARD
+// ======================
+
+function getLeaderboard(){
+
+return Object.values(users.users)
+
+.sort((a,b)=>b.points-a.points);
+
+}
+
+// ======================
+// RANDOM
+// ======================
+
+function random(min,max){
+
+return Math.floor(
+
+Math.random()*
+
+(max-min+1)
+
+)+min;
+
+}
 
 // ======================
 // READY
