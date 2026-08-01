@@ -213,6 +213,9 @@ this.message=msg;
 database.events.garudaMessage=msg.id;
 
 database.saveEvents();
+  console.log(
+`🦅 Garuda Spawn! ⏰ ${new Date().toLocaleTimeString("id-ID")}`
+);
 
 // Tutup otomatis
 
