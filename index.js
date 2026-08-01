@@ -95,7 +95,13 @@ combo:null,
 
 currentMonument:0,
 
-progress:0
+progress:0,
+
+lastGaruda:0,
+
+lastUpacara:0,
+
+lastLeaderboard:0
 
 },null,2)
 
