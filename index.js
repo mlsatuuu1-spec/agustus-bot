@@ -3,9 +3,7 @@ Client,
 GatewayIntentBits
 }=require("discord.js");
 
-const database=require("./database");
-
-const utils=require("./utils");
+const Garuda=require("./garuda");
 
 const client=new Client({
 
@@ -17,24 +15,53 @@ GatewayIntentBits.Guilds
 
 });
 
+const garuda=
+
+new Garuda(client);
+
 // ======================
-// ENV
+// READY
 // ======================
 
-const TOKEN=process.env.TOKEN;
+client.once("ready",()=>{
 
-const CLIENT_ID=process.env.CLIENT_ID;
+console.log(
 
-const GUILD_ID=process.env.GUILD_ID;
+`✅ ${client.user.tag} Online`
 
-const EVENT_CHANNEL=process.env.EVENT_CHANNEL;
+);
 
-const MONUMENT_CHANNEL=process.env.MONUMENT_CHANNEL;
+garuda.start();
 
-const LEADERBOARD_CHANNEL=process.env.LEADERBOARD_CHANNEL;
+});
 
-const LOG_CHANNEL=process.env.LOG_CHANNEL;
+// ======================
+// BUTTON
+// ======================
 
+client.on(
+
+"interactionCreate",
+
+async interaction=>{
+
+await garuda.handle(
+
+interaction
+
+);
+
+});
+
+// ======================
+// LOGIN
+// ======================
+
+client.login(
+
+process.env.TOKEN
+
+);
 const ANNOUNCEMENT_CHANNEL=process.env.ANNOUNCEMENT_CHANNEL;
 
 module.exports={
