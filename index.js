@@ -183,6 +183,14 @@ null,
 );
 
 }
+
+function saveAll(){
+
+saveUsers();
+
+saveEvents();
+
+}
 // ======================
 // USER HELPER
 // ======================
