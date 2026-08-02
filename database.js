@@ -73,6 +73,8 @@ garuda:0,
 
 monumen:0,
 
+tarik:0,
+
 combo:0,
 
 level:1,
