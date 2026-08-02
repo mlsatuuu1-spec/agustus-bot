@@ -16,7 +16,7 @@ this.client=client;
 }
 
 // =====================
-// BUILD EMBED
+// EMBED
 // =====================
 
 buildEmbed(){
@@ -29,21 +29,23 @@ return new EmbedBuilder()
 
 .setDescription(
 
-`⭐ **100 Poin = 1 ⏣**
+`💱 **KURS PENUKARAN**
 
-Aturan:
+⭐ **500 Poin = 5 ⏣**
 
-• Minimal **100 poin**
-• Berlaku kelipatan
-• Sisa poin tetap disimpan
+━━━━━━━━━━━━━━
 
 Contoh:
 
-⭐ 100 = ⏣ 1
-⭐ 250 = ⏣ 2
-⭐ 980 = ⏣ 9
+⭐ 500 → ⏣ 5
 
-Klik tombol di bawah untuk menukar poin.`
+⭐ 1000 → ⏣ 10
+
+⭐ 1500 → ⏣ 15
+
+━━━━━━━━━━━━━━
+
+Klik tombol di bawah untuk menukarkan poin.`
 
 )
 
@@ -69,7 +71,7 @@ return new ActionRowBuilder()
 
 new ButtonBuilder()
 
-.setCustomId("tukar_poin")
+.setCustomId("tukar")
 
 .setEmoji("💸")
 
@@ -82,18 +84,20 @@ new ButtonBuilder()
 }
 
 // =====================
-// SEND PANEL
+// START
 // =====================
 
-async sendPanel(){
+async start(){
 
-const channel=await this.client.channels.fetch(
+const channel=
+
+await this.client.channels.fetch(
 
 process.env.SHOP_CHANNEL
 
 );
 
-const msg=await channel.send({
+await channel.send({
 
 embeds:[
 
@@ -109,19 +113,9 @@ this.buildButton()
 
 });
 
-console.log("💸 Panel Tukar Poin berhasil dibuat");
+console.log("💸 Tukar Poin Loaded");
 
 }
-  // =====================
-// START
-// =====================
-
-async start(){
-
-await this.sendPanel();
-
-}
-
 // =====================
 // HANDLE BUTTON
 // =====================
@@ -130,7 +124,7 @@ async handle(interaction){
 
 if(!interaction.isButton()) return;
 
-if(interaction.customId!=="tukar_poin") return;
+if(interaction.customId!=="tukar") return;
 
 const user=database.getUser(
 
@@ -140,11 +134,7 @@ interaction.user.username
 
 );
 
-const poin=user.points||0;
-
-// Minimal 100 poin
-
-if(poin<100){
+if(user.points<500){
 
 return interaction.reply({
 
@@ -156,15 +146,13 @@ new EmbedBuilder()
 
 .setColor("#E74C3C")
 
-.setTitle("❌ Penukaran Gagal")
+.setTitle("❌ Poin Tidak Cukup")
 
 .setDescription(
 
-`Minimal penukaran adalah **100 poin**.
+`Kamu membutuhkan minimal **500 poin** untuk melakukan penukaran.
 
-Poin kamu saat ini:
-
-⭐ **${poin} poin**`
+⭐ Poin kamu : **${user.points}**`
 
 )
 
@@ -174,24 +162,39 @@ Poin kamu saat ini:
 
 }
 
-// Hitung Robux
+// Hitung kelipatan
 
-const robux=Math.floor(poin/100);
+const kelipatan=Math.floor(user.points/500);
 
-const sisa=poin%100;
+const dipakai=kelipatan*500;
+
+const robux=kelipatan*5;
 
 // Kurangi poin
 
-user.points=sisa;
+user.points-=dipakai;
 
-// Tambah saldo Robux
+// Tambah robux
 
 user.robux=(user.robux||0)+robux;
 
 database.saveUsers();
-  // =====================
-// REPLY
-// =====================
+
+// Update leaderboard
+
+try{
+
+const Leaderboard=require("./leaderboard");
+
+await new Leaderboard(this.client).update();
+
+}catch(err){
+
+console.error(err);
+
+}
+
+// Balasan
 
 await interaction.reply({
 
@@ -207,15 +210,11 @@ new EmbedBuilder()
 
 .setDescription(
 
-`💸 Berhasil menukar poin!
-
-⭐ Poin dipakai : **${robux*100}**
-
-⭐ Sisa poin : **${sisa}**
+`⭐ Poin dipakai : **${dipakai}**
 
 ⏣ Robux didapat : **${robux}**
 
-Silakan hubungi admin untuk pencairan Robux.`
+⭐ Sisa poin : **${user.points}**`
 
 )
 
@@ -225,62 +224,66 @@ Silakan hubungi admin untuk pencairan Robux.`
 
 });
 
+}
 // =====================
-// LOG
+// UPDATE PANEL
 // =====================
 
-try{
+async updatePanel(){
 
-const log=await this.client.channels.fetch(
-process.env.LOG_CHANNEL
+const channel=await this.client.channels.fetch(
+process.env.SHOP_CHANNEL
 );
 
-await log.send({
+const messages=await channel.messages.fetch({limit:10});
+
+const panel=messages.find(m=>
+
+m.author.id===this.client.user.id&&
+
+m.embeds.length>0&&
+
+m.embeds[0].title==="💸 TUKAR POIN"
+
+);
+
+if(panel){
+
+await panel.edit({
 
 embeds:[
 
-new EmbedBuilder()
+this.buildEmbed()
 
-.setColor("#F1C40F")
+],
 
-.setTitle("💸 Penukaran Poin")
+components:[
 
-.setDescription(
-
-`👤 ${interaction.user.username}
-
-⭐ Ditukar : **${robux*100} poin**
-
-⏣ Mendapat : **${robux}**
-
-⭐ Sisa : **${sisa} poin**`
-
-)
-
-.setTimestamp()
+this.buildButton()
 
 ]
 
 });
 
-}catch(err){
+}else{
 
-console.error(err);
+await channel.send({
+
+embeds:[
+
+this.buildEmbed()
+
+],
+
+components:[
+
+this.buildButton()
+
+]
+
+});
 
 }
-  // =====================
-// UPDATE LEADERBOARD
-// =====================
-
-try{
-
-const Leaderboard=require("./leaderboard");
-
-await new Leaderboard(this.client).update();
-
-}catch(err){
-
-console.error(err);
 
 }
 
