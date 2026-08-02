@@ -425,6 +425,16 @@ loser.username,
 
 database.saveUsers();
 
+// =====================
+// UPDATE LEADERBOARD
+// =====================
+
+const Leaderboard=require("./leaderboard");
+
+const leaderboard=new Leaderboard(this.client);
+
+await leaderboard.update();
+
 await this.message.edit({
 
 content:"🏁 **PERTANDINGAN SELESAI!**",
@@ -470,6 +480,74 @@ components:[]
 });
 
 }
+
+}
+
+// =====================
+// LOG PEROLEHAN POIN
+// =====================
+
+try{
+
+const log=await this.client.channels.fetch(
+process.env.LOG_CHANNEL
+);
+
+await log.send({
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor(0xF39C12)
+
+.setTitle(`🤼 ${winner.username}`)
+
+.setDescription(
+
+`🥇 Menang Tarik Tambang!
+
+**+5 poin**
+
+🏆 Total : **${database.getUser(winner.id).points} poin**`
+
+)
+
+.setTimestamp()
+
+]
+
+});
+
+await log.send({
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor(0xE74C3C)
+
+.setTitle(`🤼 ${loser.username}`)
+
+.setDescription(
+
+`💀 Kalah Tarik Tambang.
+
+**-2 poin**
+
+🏆 Total : **${database.getUser(loser.id).points} poin**`
+
+)
+
+.setTimestamp()
+
+]
+
+});
+
+}catch(err){
+
+console.error(err);
 
 }
 
