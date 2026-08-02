@@ -56,23 +56,7 @@ text +=
 
 .setColor("#F1C40F")
 
-.setTitle("⚔️ 17 AGUSTUS RANKING ⚔️")
-
-.setDescription(
-
-`╔════ 🏆 LEADERBOARD 🏆 ════╗
-
-${text}
-
-╚══════ Update Otomatis ══════╝`
-
-)
-
-.setThumbnail(
-
-this.client.user.displayAvatarURL()
-
-)
+.setTitle("Perolehan Poin")
 
 .setFooter({
 
