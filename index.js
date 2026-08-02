@@ -11,6 +11,8 @@ const Leaderboard = require("./leaderboard");
 
 const Monumen = require("./monumen");
 
+const Tukar=require("./tukar");
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds
@@ -24,6 +26,7 @@ const client = new Client({
 const garuda = new Garuda(client);
 const leaderboard = new Leaderboard(client);
 const monumen = new Monumen(client);
+const tukar=new Tukar(client);
 
 // ======================
 // READY
@@ -41,6 +44,7 @@ client.once("ready", async () => {
 
 garuda.start();
 monumen.start();
+tukar.start();
 
 leaderboard.update();
 
@@ -56,7 +60,7 @@ client.on("interactionCreate", async interaction => {
 
         await garuda.handle(interaction);
         await monumen.handle(interaction);
-
+        await tukar.handle(interaction);
     } catch (err) {
 
         console.error(err);
