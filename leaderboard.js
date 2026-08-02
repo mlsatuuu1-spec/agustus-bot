@@ -31,26 +31,20 @@ class Leaderboard {
 
                 users.forEach((user, index) => {
 
- const medal=
+ const medal =
 
-index===0?"👑":
+index===0 ? "🥇" :
 
-index===1?"🥈":
+index===1 ? "🥈" :
 
-index===2?"🥉":
+index===2 ? "🥉" :
 
 "🏅";
 
-text+=
+text +=
+`${medal} **${user.username}**
 
-`${medal} 『 ${user.username} 』
-
-┌──────────────────────
-⭐ Poin      : ${user.points}
-💎 Robux     : ${user.robux||0}
-🦅 Garuda    : ${user.garuda||0}
-🏗️ Monumen   : ${user.monumen||0}
-└──────────────────────
+⭐ ${user.points} | ⏣ ${user.robux || 0} | 🦅 ${user.garuda || 0} | 🏗️ ${user.monumen || 0}
 
 `;
 
