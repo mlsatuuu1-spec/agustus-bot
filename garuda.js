@@ -570,106 +570,11 @@ return reward;
 
 async updateLeaderboard(){
 
-if(!process.env.LEADERBOARD_CHANNEL) return;
+const Leaderboard = require("./leaderboard");
 
-try{
+const leaderboard = new Leaderboard(this.client);
 
-const channel=await this.client.channels.fetch(
-process.env.LEADERBOARD_CHANNEL
-);
-
-const top=database
-.leaderboard()
-.slice(0,10);
-
-let text="";
-
-if(top.length===0){
-
-text="Belum ada pemain.";
-
-}else{
-
-top.forEach((user,index)=>{
-
-const medal=
-
-index===0?"🥇":
-
-index===1?"🥈":
-
-index===2?"🥉":
-
-`🏅 ${index+1}`;
-
-text+=`${medal} **${user.username}**
-⭐ ${user.points} poin
-
-`;
-
-});
-
-}
-
-const embed=new EmbedBuilder()
-
-.setColor("#FFD700")
-
-.setTitle("🏆 Leaderboard Garuda")
-
-.setDescription(text)
-
-.setFooter({
-
-text:"Update Otomatis"
-
-})
-
-.setTimestamp();
-
-if(database.events.leaderboardMessage){
-
-try{
-
-const msg=
-
-await channel.messages.fetch(
-
-database.events.leaderboardMessage
-
-);
-
-await msg.edit({
-
-embeds:[embed]
-
-});
-
-return;
-
-}catch(err){}
-
-}
-
-const msg=
-
-await channel.send({
-
-embeds:[embed]
-
-});
-
-database.events.leaderboardMessage=msg.id;
-
-database.saveEvents();
-
-}catch(err){
-
-console.error(err);
-
-}
-
-}
+await leaderboard.update();
 
 }
 
