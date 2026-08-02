@@ -61,30 +61,29 @@ function getUser(id, username) {
 
         users.users[id] = {
 
-            id,
+id,
 
-            username,
+username,
 
-            points: 0,
+points:0,
 
-            garuda: 0,
+robux:0,
 
-            build: 0,
+garuda:0,
 
-            upacara: 0,
+monumen:0,
 
-            combo: 0,
+combo:0,
 
-            level: 1,
+level:1,
 
-            exp: 0,
+exp:0,
 
-            lastBuild: 0,
+lastBuild:0,
 
-            created: Date.now()
+created:Date.now()
 
-        };
-
+};
         saveUsers();
 
     }
