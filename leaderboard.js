@@ -57,7 +57,7 @@ text +=
 .setColor("#F1C40F")
 
 .setTitle("Perolehan Poin")
-
+.setDescription(text)
 .setFooter({
 
 text:"🇮🇩 Event Kemerdekaan 2026"
