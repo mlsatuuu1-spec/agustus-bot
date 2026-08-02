@@ -144,7 +144,7 @@ const channel=
 
 await this.client.channels.fetch(
 
-process.env.EVENT_CHANNEL
+process.env.TARIK_CHANNEL
 
 );
 
