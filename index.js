@@ -7,6 +7,8 @@ require("./database");
 
 const Garuda = require("./garuda");
 
+const Leaderboard = require("./leaderboard");
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds
@@ -18,6 +20,7 @@ const client = new Client({
 // ======================
 
 const garuda = new Garuda(client);
+const leaderboard = new Leaderboard(client);
 
 // ======================
 // READY
@@ -34,6 +37,8 @@ client.once("ready", async () => {
     console.log("================================");
 
     garuda.start();
+
+leaderboard.update();
 
 });
 
