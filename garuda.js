@@ -59,7 +59,7 @@ Tangkap Garuda sebelum kabur!
 
 )
 
-.setImage("https://e7.pngegg.com/pngimages/1006/600/png-clipart-bald-eagle-bird-golden-eagle-flying-eagles-animals-photography-thumbnail.png")
+.setImage("https://png.pngtree.com/thumb_back/fh260/background/20230609/pngtree-bald-eagle-in-flight-in-front-of-mountains-image_2903050.jpg")
 
 .setFooter({
 
