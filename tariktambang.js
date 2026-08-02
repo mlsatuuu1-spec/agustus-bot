@@ -7,6 +7,8 @@ ButtonStyle
 
 const database=require("./database");
 
+const Leaderboard=require("./leaderboard");
+
 class TarikTambang{
 
 constructor(client){
@@ -25,7 +27,9 @@ this.scoreB=0;
 
 this.message=null;
 
-this.timeout=null;
+this.prepareTimeout=null;
+
+this.battleTimeout=null;
 
 this.cooldown=new Map();
 
@@ -45,24 +49,22 @@ return new EmbedBuilder()
 
 .setDescription(
 
-`🇮🇩 **PERTANDINGAN DIMULAI!**
+`🇮🇩 **PERTANDINGAN TARIK TAMBANG**
 
-🔴 ${this.playerA.username}
+🔴 **${this.playerA.username}**
 
 🆚
 
-🔵 ${this.playerB.username}
+🔵 **${this.playerB.username}**
 
 ━━━━━━━━━━━━━━
 
-⏳ **Persiapan 1 Menit**
+⏳ Persiapan dimulai...
 
-Setelah hitungan selesai,
-semua member boleh membantu
-tim favoritnya.
+Pertandingan dimulai dalam **1 menit**.
 
-🏆 Pemenang +5 Poin
-💀 Kalah -2 Poin`
+🏆 Pemenang : **+5 Poin**
+💀 Kalah : **-2 Poin**`
 
 )
 
@@ -92,7 +94,7 @@ new ButtonBuilder()
 
 .setEmoji("⬅️")
 
-.setLabel("Tim Merah")
+.setLabel(this.playerA.username)
 
 .setStyle(ButtonStyle.Danger),
 
@@ -102,51 +104,44 @@ new ButtonBuilder()
 
 .setEmoji("➡️")
 
-.setLabel("Tim Biru")
+.setLabel(this.playerB.username)
 
 .setStyle(ButtonStyle.Primary)
 
 );
 
 }
-  // =====================
-// PILIH 2 PLAYER RANDOM
+
+// =====================
+// PILIH PLAYER RANDOM
 // =====================
 
 getRandomPlayers(){
 
 const users=database
 .leaderboard()
-.filter(u=>u.points>=0);
+.filter(u=>u.id);
 
 if(users.length<2) return false;
 
-const shuffled=[...users]
+const random=[...users]
 .sort(()=>Math.random()-0.5);
 
-this.playerA=shuffled[0];
+this.playerA=random[0];
 
-this.playerB=shuffled[1];
+this.playerB=random[1];
 
 return true;
 
 }
 
 // =====================
-// START EVENT
+// SPAWN EVENT
 // =====================
 
 async spawn(){
 
 if(!this.getRandomPlayers()) return;
-
-const channel=
-
-await this.client.channels.fetch(
-
-process.env.TARIK_CHANNEL
-
-);
 
 this.active=false;
 
@@ -154,37 +149,33 @@ this.scoreA=0;
 
 this.scoreB=0;
 
-const msg=
+this.cooldown.clear();
 
-await channel.send({
+const channel=await this.client.channels.fetch(
+process.env.TARIK_CHANNEL
+);
+
+this.message=await channel.send({
 
 content:"@everyone",
 
 embeds:[
-
 this.buildEmbed()
-
 ]
 
 });
 
-this.message=msg;
-
 console.log(
-
 `🤼 Tarik Tambang
 
 ${this.playerA.username}
-
 VS
-
 ${this.playerB.username}`
-
 );
 
 // Persiapan 1 menit
 
-setTimeout(()=>{
+this.prepareTimeout=setTimeout(()=>{
 
 this.startBattle();
 
@@ -198,15 +189,12 @@ this.startBattle();
 
 start(){
 
-console.log(
+console.log("🤼 Tarik Tambang Loaded");
 
-"🤼 Tarik Tambang Loaded"
-
-);
-
-// Muncul setiap 30 menit
-
+// Langsung mulai 1 pertandingan
 this.spawn();
+
+// Lalu muncul setiap 30 menit
 
 setInterval(()=>{
 
@@ -215,7 +203,8 @@ this.spawn();
 },30*60*1000);
 
 }
-  // =====================
+
+// =====================
 // MULAI PERTANDINGAN
 // =====================
 
@@ -240,12 +229,14 @@ new EmbedBuilder()
 `🔴 **${this.playerA.username}**
 Skor : **${this.scoreA}**
 
-🆚
+━━━━━━━━━━━━━━
 
 🔵 **${this.playerB.username}**
 Skor : **${this.scoreB}**
 
-⏰ Waktu : **20 Detik**`
+⏰ Waktu tersisa : **20 Detik**
+
+👇 Semua member boleh membantu tim favoritnya!`
 
 )
 
@@ -259,9 +250,9 @@ this.buildButton()
 
 });
 
-// 20 detik pertandingan
+// Selesai setelah 20 detik
 
-this.timeout=setTimeout(()=>{
+this.battleTimeout=setTimeout(()=>{
 
 this.finishBattle();
 
@@ -270,7 +261,7 @@ this.finishBattle();
 }
 
 // =====================
-// UPDATE SCORE
+// UPDATE SKOR
 // =====================
 
 async updateBattle(){
@@ -292,12 +283,12 @@ new EmbedBuilder()
 `🔴 **${this.playerA.username}**
 Skor : **${this.scoreA}**
 
-🆚
+━━━━━━━━━━━━━━
 
 🔵 **${this.playerB.username}**
 Skor : **${this.scoreB}**
 
-⏰ Sedang Berlangsung...`
+⏰ Pertandingan sedang berlangsung...`
 
 )
 
@@ -312,7 +303,8 @@ this.buildButton()
 });
 
 }
-  // =====================
+
+// =====================
 // HANDLE BUTTON
 // =====================
 
@@ -339,13 +331,15 @@ ephemeral:true
 
 // Cooldown 1 detik
 
-const last=this.cooldown.get(interaction.user.id)||0;
+const last=this.cooldown.get(
+interaction.user.id
+)||0;
 
 if(Date.now()-last<1000){
 
 return interaction.reply({
 
-content:"⏳ Tunggu sebentar sebelum klik lagi.",
+content:"⏳ Jangan spam tombol!",
 
 ephemeral:true
 
@@ -373,14 +367,20 @@ this.scoreB++;
 
 }
 
+// Update pesan
+
+try{
+
 await interaction.deferUpdate();
 
-this.updateBattle();
+}catch(err){}
+
+await this.updateBattle();
 
 }
 
 // =====================
-// SELESAI
+// SELESAI PERTANDINGAN
 // =====================
 
 async finishBattle(){
@@ -403,25 +403,23 @@ loser=this.playerA;
 
 }
 
-database.addPoint(
+// Tambah / Kurang poin
 
+const winnerUser=database.addPoint(
 winner.id,
-
 winner.username,
-
 5
-
 );
 
-database.removePoint(
-
+const loserUser=database.removePoint(
 loser.id,
-
 loser.username,
-
 2
-
 );
+
+// Statistik
+
+winnerUser.tarik=(winnerUser.tarik||0)+1;
 
 database.saveUsers();
 
@@ -429,57 +427,15 @@ database.saveUsers();
 // UPDATE LEADERBOARD
 // =====================
 
-const Leaderboard=require("./leaderboard");
+try{
 
 const leaderboard=new Leaderboard(this.client);
 
 await leaderboard.update();
 
-await this.message.edit({
+}catch(err){
 
-content:"🏁 **PERTANDINGAN SELESAI!**",
-
-embeds:[
-
-new EmbedBuilder()
-
-.setColor("#2ECC71")
-
-.setTitle("🏆 HASIL TARIK TAMBANG")
-
-.setDescription(
-
-`🥇 Pemenang
-
-**${winner.username}**
-
-(+5 Poin)
-
-━━━━━━━━━━━━━━
-
-💀 Kalah
-
-**${loser.username}**
-
-(-2 Poin)
-
-━━━━━━━━━━━━━━
-
-🔴 ${this.scoreA}
-
-🆚
-
-🔵 ${this.scoreB}`
-
-)
-
-],
-
-components:[]
-
-});
-
-}
+console.error(err);
 
 }
 
@@ -491,16 +447,6 @@ try{
 
 const log=await this.client.channels.fetch(
 process.env.LOG_CHANNEL
-);
-
-const winnerUser=database.getUser(
-winner.id,
-winner.username
-);
-
-const loserUser=database.getUser(
-loser.id,
-loser.username
 );
 
 await log.send({
@@ -515,7 +461,7 @@ new EmbedBuilder()
 
 .setDescription(
 
-`🥇 Berhasil memenangkan Tarik Tambang!
+`🥇 Menang Tarik Tambang
 
 **+5 poin**
 
@@ -541,7 +487,7 @@ new EmbedBuilder()
 
 .setDescription(
 
-`💀 Kalah dalam Tarik Tambang.
+`💀 Kalah Tarik Tambang
 
 **-2 poin**
 
@@ -558,6 +504,54 @@ new EmbedBuilder()
 }catch(err){
 
 console.error(err);
+
+}
+
+// =====================
+// EDIT PESAN
+// =====================
+
+await this.message.edit({
+
+content:"🏁 **PERTANDINGAN SELESAI!**",
+
+embeds:[
+
+new EmbedBuilder()
+
+.setColor("#2ECC71")
+
+.setTitle("🏆 HASIL TARIK TAMBANG")
+
+.setDescription(
+
+`🥇 **${winner.username}**
+
+(+5 Poin)
+
+━━━━━━━━━━━━━━
+
+💀 **${loser.username}**
+
+(-2 Poin)
+
+━━━━━━━━━━━━━━
+
+🔴 ${this.scoreA}
+
+🆚
+
+🔵 ${this.scoreB}`
+
+)
+
+],
+
+components:[]
+
+});
+
+}
 
 }
 
