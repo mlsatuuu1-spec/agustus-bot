@@ -31,9 +31,9 @@ class Leaderboard {
 
                 users.forEach((user, index) => {
 
- const medal =
+ const medal=
 
-index===0?"🥇":
+index===0?"👑":
 
 index===1?"🥈":
 
@@ -41,25 +41,16 @@ index===2?"🥉":
 
 "🏅";
 
-text +=
+text+=
 
-`${medal} **${user.username}**
+`${medal} 『 ${user.username} 』
 
-━━━━━━━━━━━━━━━━━━
-
-⭐ **Poin**
-${user.points}
-
-⏣ **Robux**
-${user.robux||0}
-
-🦅 **Garuda**
-${user.garuda||0}
-
-🏗️ **Monumen**
-${user.monumen||0}
-
-━━━━━━━━━━━━━━━━━━
+┌──────────────────────
+⭐ Poin      : ${user.points}
+💎 Robux     : ${user.robux||0}
+🦅 Garuda    : ${user.garuda||0}
+🏗️ Monumen   : ${user.monumen||0}
+└──────────────────────
 
 `;
 
@@ -69,17 +60,33 @@ ${user.monumen||0}
 
             const embed = new EmbedBuilder()
 
-                .setColor("#FFD700")
+.setColor("#F1C40F")
 
-                .setTitle("🏆 LEADERBOARD GARUDA")
+.setTitle("⚔️ 17 AGUSTUS RANKING ⚔️")
 
-                .setDescription(text)
+.setDescription(
 
-                .setFooter({
-                    text: "Update Otomatis"
-                })
+`╔════ 🏆 LEADERBOARD 🏆 ════╗
 
-                .setTimestamp();
+${text}
+
+╚══════ Update Otomatis ══════╝`
+
+)
+
+.setThumbnail(
+
+this.client.user.displayAvatarURL()
+
+)
+
+.setFooter({
+
+text:"🇮🇩 Event Kemerdekaan 2026"
+
+})
+
+.setTimestamp();
 
             if (database.events.leaderboardMessage) {
 
