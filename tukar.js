@@ -89,6 +89,8 @@ new ButtonBuilder()
 
 async start(){
 
+console.log("SHOP_CHANNEL =", process.env.SHOP_CHANNEL);
+
 const channel=
 
 await this.client.channels.fetch(
