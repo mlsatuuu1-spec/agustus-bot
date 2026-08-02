@@ -59,9 +59,7 @@ Tangkap Garuda sebelum kabur!
 
 )
 
-.setThumbnail(
-
-"https://cdn.discordapp.com/emojis/🦅.png"
+.setImage("https://e7.pngegg.com/pngimages/1006/600/png-clipart-bald-eagle-bird-golden-eagle-flying-eagles-animals-photography-thumbnail.png")
 
 )
 
@@ -240,22 +238,7 @@ components:[]
 },30000);
 
 }
-  // =====================
-// START
-// =====================
-
-start(){
-
-console.log("🦅 Garuda Module Loaded");
-
-// Spawn pertama
-
-this.spawn();
-
-// Scheduler akan dibuat
-// di Part 3
-
-}
+ 
   // =====================
 // HANDLE BUTTON
 // =====================
@@ -270,7 +253,7 @@ if(!this.active){
 
 return interaction.reply({
 
-content:"🦅 Garuda sudah kabur!",
+content:"🦅 Garuda sudah kabur.",
 
 ephemeral:true
 
@@ -294,9 +277,21 @@ ephemeral:true
 
 this.claimed.add(id);
 
-let reward=utils.randomReward();
+let user=database.getUser(
 
-let user;
+id,
+
+interaction.user.username
+
+);
+
+let reward=this.applySpecial(
+
+user,
+
+utils.randomReward()
+
+);
 
 if(reward.point>=0){
 
@@ -324,13 +319,9 @@ Math.abs(reward.point)
 
 }
 
-// Statistik
-
-user.garuda=(user.garuda||0)+1;
+user.garuda++;
 
 database.saveUsers();
-
-// Kirim Log
 
 try{
 
@@ -382,8 +373,6 @@ console.error(err);
 
 }
 
-// Reply
-
 await interaction.reply({
 
 ephemeral:true,
@@ -417,22 +406,28 @@ reward.point>=0
 ]
 
 });
-  await this.updateLeaderboard();
+
+try{
+
+await this.updateLeaderboard();
+
+}catch(err){
+
+console.error(err);
 
 }
-  // =====================
+
+}
+
+// =====================
 // SCHEDULER
 // =====================
 
 startScheduler(){
 
-// Cek setiap 30 detik
-
 this.scheduler=setInterval(async()=>{
 
 const now=new Date();
-
-// Hari baru
 
 if(this.today!==this.todayKey()){
 
@@ -440,9 +435,7 @@ this.today=this.todayKey();
 
 this.generateSchedule();
 
-console.log("🦅 Schedule Baru");
-
-console.log(this.schedule);
+console.log("📅 Jadwal Garuda Baru");
 
 }
 
@@ -459,6 +452,12 @@ this.schedule.includes(minute)&&
 !this.active
 
 ){
+
+console.log(
+
+`🦅 Spawn Scheduler ${minute}`
+
+);
 
 try{
 
@@ -488,12 +487,14 @@ this.today=this.todayKey();
 
 this.generateSchedule();
 
+// Langsung spawn 1 Garuda
+this.spawn();
+
+// Jalankan scheduler
 this.startScheduler();
 
 console.log(
-
 `📅 Total Spawn Hari Ini : ${this.schedule.length}`
-
 );
 
 }
@@ -505,7 +506,7 @@ applySpecial(user,reward){
 
 const roll=Math.random()*100;
 
-// 👑 Golden Garuda (3%)
+user.streak=user.streak||0;
 
 if(roll<=3){
 
@@ -517,13 +518,11 @@ item:"Golden Garuda",
 
 point:10,
 
-text:"✨ **GOLDEN GARUDA!**\n\nKamu mendapat bonus +10 poin!"
+text:"✨ **GOLDEN GARUDA!**\n\n+10 poin"
 
 };
 
 }
-
-// ☠️ Garuda Sial (3%)
 
 else if(roll>=97){
 
@@ -535,33 +534,21 @@ item:"Garuda Sial",
 
 point:-10,
 
-text:"💀 **GARUDA SIAL!**\n\nGaruda menjatuhkan tai super 😭"
+text:"💀 **GARUDA SIAL!**"
 
 };
 
 }
 
-// 🌙 Night Bonus
-
 const hour=new Date().getHours();
 
-if(
-
-reward.point>0&&
-
-(hour>=22||hour<5)
-
-){
+if(reward.point>0&&(hour>=22||hour<5)){
 
 reward.point*=2;
 
-reward.text+="\n\n🌙 Night Bonus x2";
+reward.text+="\n🌙 Night Bonus x2";
 
 }
-
-// 🔥 Lucky Streak
-
-user.streak=user.streak||0;
 
 user.streak++;
 
@@ -569,7 +556,7 @@ if(user.streak>=3){
 
 reward.point+=2;
 
-reward.text+="\n\n🔥 Lucky Streak +2 poin";
+reward.text+="\n🔥 Lucky Streak +2";
 
 user.streak=0;
 
@@ -578,67 +565,67 @@ user.streak=0;
 return reward;
 
 }
-  // =====================
+
+ // =====================
 // LEADERBOARD UPDATE
 // =====================
 
 async updateLeaderboard(){
 
-if(!process.env.LEADERBOARD_CHANNEL)
-
-return;
+if(!process.env.LEADERBOARD_CHANNEL) return;
 
 try{
 
-const channel=
-
-await this.client.channels.fetch(
-
+const channel=await this.client.channels.fetch(
 process.env.LEADERBOARD_CHANNEL
-
 );
 
-const top=
-
-database.leaderboard()
-
+const top=database
+.leaderboard()
 .slice(0,10);
 
-let desc="";
+let text="";
 
 if(top.length===0){
 
-desc="Belum ada data.";
+text="Belum ada pemain.";
 
 }else{
 
-top.forEach((u,i)=>{
+top.forEach((user,index)=>{
 
 const medal=
 
-i===0?"🥇":
+index===0?"🥇":
 
-i===1?"🥈":
+index===1?"🥈":
 
-i===2?"🥉":
+index===2?"🥉":
 
-`${i+1}.`;
+`🏅 ${index+1}`;
 
-desc+=`${medal} **${u.username}** — ${u.points} poin\n`;
+text+=`${medal} **${user.username}**
+⭐ ${user.points} poin
+
+`;
 
 });
 
 }
 
-const embed=
+const embed=new EmbedBuilder()
 
-new EmbedBuilder()
+.setColor("#FFD700")
 
-.setColor("#F1C40F")
+.setTitle("🏆 Leaderboard Garuda")
 
-.setTitle("🏆 LEADERBOARD")
+.setDescription(text)
 
-.setDescription(desc)
+.setFooter({
+
+text:"Update Otomatis"
+
+})
 
 .setTimestamp();
 
@@ -674,17 +661,13 @@ embeds:[embed]
 
 });
 
-database.events.leaderboardMessage=
-
-msg.id;
+database.events.leaderboardMessage=msg.id;
 
 database.saveEvents();
 
 }catch(err){
 
 console.error(err);
-
-}
 
 }
 
