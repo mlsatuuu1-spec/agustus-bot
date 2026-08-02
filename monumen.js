@@ -6,7 +6,6 @@ ButtonStyle
 }=require("discord.js");
 
 const database=require("./database");
-const utils=require("./utils");
 
 class Monumen{
 
@@ -16,7 +15,11 @@ this.client=client;
 
 this.active=false;
 
-this.claimed=new Set();
+this.progress=0;
+
+this.workers=new Set();
+
+this.cooldown={};
 
 this.message=null;
 
@@ -24,127 +27,99 @@ this.timeout=null;
 
 this.scheduler=null;
 
-this.today="";
+this.nextSpawn=0;
 
-this.schedule=[];
+this.project=null;
 
-this.maxSpawn=15;
-
-this.list=[
+this.projects=[
 
 {
 name:"Monumen Nasional",
 emoji:"🗼",
-image:"https://cdn0-production-images-kly.akamaized.net/KDg0DCqy74Hy2uMOUUqUgXls74M=/1200x675/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/788949/original/088808800_1420183683-Monas5.jpg"
+image:"https://upload.wikimedia.org/wikipedia/commons/e/e5/Monas_Jakarta.jpg"
 },
 
 {
 name:"Candi Borobudur",
 emoji:"🛕",
-image:"https://cdn1-production-images-kly.akamaized.net/KRV05_LNI_woM1xsLULUlF-KGZE=/1200x675/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/3023951/original/083764400_1579164554-indonesia-1098328_1920.jpg"
+image:"https://upload.wikimedia.org/wikipedia/commons/9/91/Borobudur-Nothwest-view.jpg"
 },
 
 {
 name:"Candi Prambanan",
-emoji:"🏛",
-image:"https://magelangekspres.disway.id/upload/40469391f378412c802b73e35f6245da.jpg"
+emoji:"🏛️",
+image:"https://upload.wikimedia.org/wikipedia/commons/7/7e/Prambanan_Temple.jpg"
 },
 
 {
 name:"Tugu Pahlawan",
 emoji:"⚔️",
-image:"https://tiketwisata.surabaya.go.id/storage/tour/monumen-tugu-pahlawan_1680340884.jpeg"
+image:"https://upload.wikimedia.org/wikipedia/commons/0/03/Tugu_Pahlawan_Surabaya.jpg"
 },
 
 {
 name:"Lawang Sewu",
-emoji:"🏚",
-image:"https://upload.wikimedia.org/wikipedia/commons/e/e8/Lawang_sewu_semarang.jpg"
+emoji:"🏚️",
+image:"https://upload.wikimedia.org/wikipedia/commons/5/57/Lawang_Sewu.jpg"
 }
 
 ];
 
 }
 
-// =====================
-// RANDOM SCHEDULE
-// =====================
+randomProject(){
 
-generateSchedule(){
-
-const result=[];
-
-while(result.length<this.maxSpawn){
-
-const minute=Math.floor(Math.random()*1440);
-
-if(!result.includes(minute))
-result.push(minute);
-
-}
-
-result.sort((a,b)=>a-b);
-
-this.schedule=result;
-
-}
-
-// =====================
-// TODAY
-// =====================
-
-todayKey(){
-
-const now=new Date();
-
-return `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
-
-}
-
-// =====================
-// RANDOM MONUMENT
-// =====================
-
-randomMonument(){
-
-return this.list[
+return this.projects[
 Math.floor(
-Math.random()*this.list.length
+Math.random()*this.projects.length
 )
 ];
 
 }
-  // =====================
+
+progressBar(){
+
+const full=Math.floor(this.progress/10);
+
+return "🟩".repeat(full)+"⬜".repeat(10-full);
+
+}
+
+// =====================
 // BUILD EMBED
 // =====================
 
-buildEmbed(monumen){
+buildEmbed(){
 
 return new EmbedBuilder()
 
 .setColor("#16A34A")
 
-.setTitle(`${monumen.emoji} MONUMEN DITEMUKAN!`)
+.setTitle(`🏗️ ${this.project.name}`)
 
 .setDescription(
 
-`📍 **${monumen.name}**
+`🔨 **Ayo bangun monumen bersama!**
 
-Ayo kunjungi monumen ini!
+${this.progressBar()}
 
-👥 Semua member boleh ikut.
+**Progress : ${this.progress}%**
 
-🎁 Hadiah bisa positif ataupun negatif.
+👷 Kontributor : **${this.workers.size}**
 
-⏰ Event berlangsung **30 detik**.`
+⏰ Cooldown membangun:
+**5 Menit**
+
+🏆 Bonus saat selesai:
+**+10 Poin untuk semua kontributor**`
 
 )
 
-.setImage(monumen.image)
+.setImage(this.project.image)
 
 .setFooter({
 
-text:"Jelajah Nusantara 2026"
+text:"Event Bangun Monumen"
 
 })
 
@@ -164,11 +139,9 @@ return new ActionRowBuilder()
 
 new ButtonBuilder()
 
-.setCustomId("monumen")
+.setCustomId("bangun_monumen")
 
-.setEmoji("🗺️")
-
-.setLabel("Kunjungi Monumen")
+.setLabel("🔨 Bangun")
 
 .setStyle(ButtonStyle.Success)
 
@@ -186,74 +159,60 @@ const channel=await this.client.channels.fetch(
 process.env.MONUMENT_CHANNEL
 );
 
-const monumen=this.randomMonument();
-
 this.active=true;
 
-this.claimed.clear();
+this.progress=0;
+
+this.workers.clear();
+
+this.cooldown={};
+
+this.project=this.randomProject();
 
 const msg=await channel.send({
 
-content:"📢 **MONUMEN BARU DITEMUKAN!**",
+content:"@everyone",
 
 embeds:[
-this.buildEmbed(monumen)
+
+this.buildEmbed()
+
 ],
 
 components:[
+
 this.buildButton()
-]
+
+],
+
+allowedMentions:{
+
+parse:["everyone"]
+
+}
 
 });
 
 this.message=msg;
 
 console.log(
-`🗿 ${monumen.name} muncul!`
+`🏗️ ${this.project.name} dimulai`
 );
 
-clearTimeout(this.timeout);
-
-this.timeout=setTimeout(async()=>{
-
-this.active=false;
-
-try{
-
-await msg.edit({
-
-content:"💨 Kesempatan mengunjungi monumen telah berakhir.",
-
-components:[]
-
-});
-
-}catch(err){}
-
-},30000);
-
 }
-  // =====================
+
+// =====================
 // START
 // =====================
 
 start(){
 
-console.log("🗿 Monumen Module Loaded");
+console.log("🏗️ Monumen Module Loaded");
 
-this.today=this.todayKey();
+// Muncul pertama setelah 2 jam
+this.nextSpawn=Date.now()+7200000;
 
-this.generateSchedule();
-
-// Spawn pertama
-this.spawn();
-
-// Jalankan scheduler
 this.startScheduler();
-
-console.log(
-`🗿 Total Monumen Hari Ini : ${this.schedule.length}`
-);
 
 }
 
@@ -265,13 +224,13 @@ async handle(interaction){
 
 if(!interaction.isButton()) return;
 
-if(interaction.customId!=="monumen") return;
+if(interaction.customId!=="bangun_monumen") return;
 
 if(!this.active){
 
 return interaction.reply({
 
-content:"🗿 Event Monumen sudah berakhir.",
+content:"❌ Saat ini tidak ada proyek monumen.",
 
 ephemeral:true
 
@@ -281,11 +240,31 @@ ephemeral:true
 
 const id=interaction.user.id;
 
-if(this.claimed.has(id)){
+const now=Date.now();
+
+// Cooldown 5 menit
+
+if(
+
+this.cooldown[id]&&
+
+now<this.cooldown[id]
+
+){
+
+const s=Math.ceil(
+
+(this.cooldown[id]-now)/1000
+
+);
+
+const m=Math.floor(s/60);
+
+const d=s%60;
 
 return interaction.reply({
 
-content:"❌ Kamu sudah mengunjungi monumen ini.",
+content:`⏳ Tunggu **${m} menit ${d} detik** untuk membantu lagi.`,
 
 ephemeral:true
 
@@ -293,98 +272,125 @@ ephemeral:true
 
 }
 
-this.claimed.add(id);
+this.cooldown[id]=now+300000;
 
-let reward=utils.randomReward();
+// Tambah progress 1-3%
 
-let user;
+const add=Math.floor(Math.random()*3)+1;
 
-if(reward.point>=0){
+this.progress+=add;
 
-user=database.addPoint(
+if(this.progress>100)
 
-id,
+this.progress=100;
 
-interaction.user.username,
+// Tambah statistik
 
-reward.point
+this.workers.add(id);
 
-);
-
-}else{
-
-user=database.removePoint(
+const user=database.addPoint(
 
 id,
 
 interaction.user.username,
 
-Math.abs(reward.point)
+1
 
 );
 
-}
+user.monumen=(user.monumen||0)+1;
 
-await interaction.reply({
+database.saveUsers();
 
-ephemeral:true,
+// Update embed
+
+await this.message.edit({
 
 embeds:[
 
-new EmbedBuilder()
+this.buildEmbed()
 
-.setColor(
+],
 
-reward.point>=0
-?0x57F287
-:0xED4245
-)
+components:[
 
-.setTitle("🗿 Hasil Kunjungan")
-
-.setDescription(
-
-`${reward.text}
-
-**${reward.point>=0?"+":""}${reward.point} poin**
-
-🏆 Total poin : **${user.points}**`
-
-)
+this.buildButton()
 
 ]
 
 });
 
+await interaction.reply({
+
+ephemeral:true,
+
+content:`🔨 Kamu membantu pembangunan **+${add}%**\n⭐ +1 poin`
+
+});
+
+if(this.progress>=100){
+
+await this.finish();
+
+}
+
+}
+
+// =====================
+// FINISH PROJECT
+// =====================
+
+async finish(){
+
+this.active=false;
+
+// Bonus semua kontributor
+
+for(const id of this.workers){
+
+const user=database.users.users[id];
+
+if(!user) continue;
+
+user.points+=10;
+
+}
+
+database.saveUsers();
+
 try{
 
-const log=await this.client.channels.fetch(
-process.env.LOG_CHANNEL
-);
+await this.message.edit({
 
-await log.send({
+content:"🎉 **MONUMEN SELESAI DIBANGUN!**",
 
 embeds:[
 
 new EmbedBuilder()
 
-.setColor(0x2ECC71)
+.setColor("#F1C40F")
 
-.setTitle(`🗿 ${interaction.user.username}`)
+.setTitle(`🏆 ${this.project.name}`)
 
 .setDescription(
 
-`${reward.text}
+`✅ Monumen berhasil diselesaikan!
 
-**${reward.point>=0?"+":""}${reward.point} poin**
+👷 Kontributor : **${this.workers.size}**
 
-🏆 Total : **${user.points} poin**`
+🎁 Semua kontributor mendapat **+10 poin**
+
+🕑 Proyek berikutnya muncul **2 jam lagi**.`
 
 )
 
+.setImage(this.project.image)
+
 .setTimestamp()
 
-]
+],
+
+components:[]
 
 });
 
@@ -394,9 +400,15 @@ console.error(err);
 
 }
 
+const Leaderboard=require("./leaderboard");
+
+await new Leaderboard(this.client).update();
+
+this.nextSpawn=Date.now()+7200000;
+
 }
 
-  // =====================
+// =====================
 // SCHEDULER
 // =====================
 
@@ -404,61 +416,19 @@ startScheduler(){
 
 this.scheduler=setInterval(async()=>{
 
-const now=new Date();
-
-if(this.today!==this.todayKey()){
-
-this.today=this.todayKey();
-
-this.generateSchedule();
-
-console.log("🗿 Jadwal Monumen Baru");
-
-}
-
-const minute=
-
-now.getHours()*60+
-
-now.getMinutes();
-
 if(
 
-this.schedule.includes(minute)&&
+!this.active&&
 
-!this.active
+Date.now()>=this.nextSpawn
 
 ){
 
-try{
-
 await this.spawn();
-
-}catch(err){
-
-console.error(err);
-
-}
 
 }
 
 },30000);
-
-}
-
-// =====================
-// UPDATE LEADERBOARD
-// =====================
-
-async updateLeaderboard(){
-
-const Leaderboard=require("./leaderboard");
-
-const leaderboard=
-
-new Leaderboard(this.client);
-
-await leaderboard.update();
 
 }
 
