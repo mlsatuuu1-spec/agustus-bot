@@ -493,23 +493,33 @@ const log=await this.client.channels.fetch(
 process.env.LOG_CHANNEL
 );
 
+const winnerUser=database.getUser(
+winner.id,
+winner.username
+);
+
+const loserUser=database.getUser(
+loser.id,
+loser.username
+);
+
 await log.send({
 
 embeds:[
 
 new EmbedBuilder()
 
-.setColor(0xF39C12)
+.setColor(0x57F287)
 
 .setTitle(`🤼 ${winner.username}`)
 
 .setDescription(
 
-`🥇 Menang Tarik Tambang!
+`🥇 Berhasil memenangkan Tarik Tambang!
 
 **+5 poin**
 
-🏆 Total : **${database.getUser(winner.id).points} poin**`
+🏆 Total : **${winnerUser.points} poin**`
 
 )
 
@@ -525,17 +535,17 @@ embeds:[
 
 new EmbedBuilder()
 
-.setColor(0xE74C3C)
+.setColor(0xED4245)
 
 .setTitle(`🤼 ${loser.username}`)
 
 .setDescription(
 
-`💀 Kalah Tarik Tambang.
+`💀 Kalah dalam Tarik Tambang.
 
 **-2 poin**
 
-🏆 Total : **${database.getUser(loser.id).points} poin**`
+🏆 Total : **${loserUser.points} poin**`
 
 )
 
