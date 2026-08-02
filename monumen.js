@@ -35,31 +35,31 @@ this.list=[
 {
 name:"Monumen Nasional",
 emoji:"🗼",
-image:"https://upload.wikimedia.org/wikipedia/commons/e/e5/Monas_Jakarta.jpg"
+image:"https://cdn0-production-images-kly.akamaized.net/KDg0DCqy74Hy2uMOUUqUgXls74M=/1200x675/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/788949/original/088808800_1420183683-Monas5.jpg"
 },
 
 {
 name:"Candi Borobudur",
 emoji:"🛕",
-image:"https://upload.wikimedia.org/wikipedia/commons/9/91/Borobudur-Nothwest-view.jpg"
+image:"https://cdn1-production-images-kly.akamaized.net/KRV05_LNI_woM1xsLULUlF-KGZE=/1200x675/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/3023951/original/083764400_1579164554-indonesia-1098328_1920.jpg"
 },
 
 {
 name:"Candi Prambanan",
 emoji:"🏛",
-image:"https://upload.wikimedia.org/wikipedia/commons/7/7e/Prambanan_Temple.jpg"
+image:"https://magelangekspres.disway.id/upload/40469391f378412c802b73e35f6245da.jpg"
 },
 
 {
 name:"Tugu Pahlawan",
 emoji:"⚔️",
-image:"https://upload.wikimedia.org/wikipedia/commons/0/03/Tugu_Pahlawan_Surabaya.jpg"
+image:"https://tiketwisata.surabaya.go.id/storage/tour/monumen-tugu-pahlawan_1680340884.jpeg"
 },
 
 {
 name:"Lawang Sewu",
 emoji:"🏚",
-image:"https://upload.wikimedia.org/wikipedia/commons/5/57/Lawang_Sewu.jpg"
+image:"https://upload.wikimedia.org/wikipedia/commons/e/e8/Lawang_sewu_semarang.jpg"
 }
 
 ];
@@ -393,6 +393,9 @@ new EmbedBuilder()
 console.error(err);
 
 }
+
+}
+
   // =====================
 // SCHEDULER
 // =====================
