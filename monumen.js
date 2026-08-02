@@ -209,8 +209,11 @@ start(){
 
 console.log("🏗️ Monumen Module Loaded");
 
-// Muncul pertama setelah 2 jam
-this.nextSpawn=Date.now()+7200000;
+// Langsung spawn sekali
+this.spawn();
+
+// Jadwal berikutnya 2 jam lagi
+this.nextSpawn = Date.now() + 7200000;
 
 this.startScheduler();
 
