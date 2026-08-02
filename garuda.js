@@ -61,8 +61,6 @@ Tangkap Garuda sebelum kabur!
 
 .setImage("https://e7.pngegg.com/pngimages/1006/600/png-clipart-bald-eagle-bird-golden-eagle-flying-eagles-animals-photography-thumbnail.png")
 
-)
-
 .setFooter({
 
 text:"Event Kemerdekaan 2026"
