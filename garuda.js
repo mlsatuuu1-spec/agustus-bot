@@ -182,7 +182,7 @@ const msg=
 
 await channel.send({
 
-content:"🚨 **GARUDA TERLIHAT!!**\n@everyone",
+content:"🚨 **GARUDA TERLIHAT!!",
 
 embeds:[
 
@@ -530,7 +530,7 @@ emoji:"☠️",
 
 item:"Garuda Sial",
 
-point:-10,
+point:-100,
 
 text:"💀 **GARUDA SIAL!**"
 
@@ -578,7 +578,7 @@ await leaderboard.update();
 
 }
 
-}
+}}}
 
 // =====================
 // EXPORT
