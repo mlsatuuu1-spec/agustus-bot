@@ -61,7 +61,7 @@ const rewards = [
 emoji:"🇮🇩",
 item:"Bendera Merah Putih",
 point:5,
-chance:15,
+chance:2,
 text:"🇮🇩 Kamu berhasil menangkap Garuda!"
 },
 
@@ -76,8 +76,8 @@ text:"🎖️ Garuda menghadiahimu medali."
 {
 emoji:"🚗",
 item:"Avanza",
-point:4,
-chance:5,
+point:5,
+chance:1,
 text:"🚗 Entah dari mana Garuda menjatuhkan Avanza."
 },
 
@@ -85,7 +85,7 @@ text:"🚗 Entah dari mana Garuda menjatuhkan Avanza."
 emoji:"🍜",
 item:"Mie Ayam",
 point:2,
-chance:15,
+chance:3,
 text:"🍜 Kamu mendapat mie ayam."
 },
 
@@ -109,31 +109,31 @@ text:"🩴 Lumayan dapat sandal."
 emoji:"💩",
 item:"Tai Ayam",
 point:-5,
-chance:18,
+chance:24,
 text:"💩 Astaga... Garuda malah menjatuhkan tai ayam."
 },
 
 {
 emoji:"🐄",
 item:"Tai Kebo",
-point:-3,
-chance:8,
+point:-25,
+chance:40,
 text:"🐄 Kamu kena tai kebo."
 },
 
 {
 emoji:"🦟",
 item:"Nyamuk",
-point:-2,
-chance:6,
+point:-8,
+chance:10,
 text:"🦟 Digigit nyamuk."
 },
 
 {
 emoji:"🪨",
 item:"Kesandung Batu",
-point:-1,
-chance:4,
+point:-9,
+chance:10,
 text:"🪨 Kamu kesandung batu."
 },
 
@@ -141,7 +141,7 @@ text:"🪨 Kamu kesandung batu."
 emoji:"👑",
 item:"Mahkota Garuda",
 point:20,
-chance:0.5,
+chance:0.1,
 text:"👑 JACKPOT!! Mahkota Garuda!"
 },
 
@@ -149,7 +149,7 @@ text:"👑 JACKPOT!! Mahkota Garuda!"
 emoji:"💰",
 item:"Karung Robux",
 point:15,
-chance:0.5,
+chance:0.1,
 text:"💰 JACKPOT!! Karung Robux!"
 }
 
