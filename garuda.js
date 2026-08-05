@@ -578,7 +578,7 @@ await leaderboard.update();
 
 }
 
-}}}
+}
 
 // =====================
 // EXPORT
