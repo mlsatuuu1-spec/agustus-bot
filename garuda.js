@@ -560,6 +560,14 @@ user.streak=0;
 
 }
 
+// Maksimal hadiah 50 poin
+
+if(reward.point > 50){
+
+    reward.point = 50;
+
+}
+
 return reward;
 
 }
