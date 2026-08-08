@@ -58,6 +58,41 @@ text +=
 
 .setTitle("Perolehan Poin")
 .setDescription(text)
+// ======================
+// TOTAL ROBUX DIDAPAT
+// ======================
+
+let robuxText = "";
+
+users.forEach((user) => {
+
+    robuxText +=
+`${user.username} — 💎 ${user.robux || 0} ⏣\n`;
+
+});
+
+// ======================
+// EMBED
+// ======================
+
+const embed = new EmbedBuilder()
+
+.setColor("#F1C40F")
+
+.setTitle("🏆 LEADERBOARD KEMERDEKAAN")
+
+.setDescription(
+
+`${text}
+
+━━━━━━━━━━━━━━━━━━━━
+
+💎 **TOTAL ROBUX DIDAPAT**
+
+${robuxText}`
+
+)
+
 .setFooter({
 
 text:"🇮🇩 Event Kemerdekaan 2026"
