@@ -31,20 +31,15 @@ class Leaderboard {
 
                 users.forEach((user, index) => {
 
- const medal =
+                    const medal =
+                        index === 0 ? "🥇" :
+                        index === 1 ? "🥈" :
+                        index === 2 ? "🥉" :
+                        "🏅";
 
-index===0 ? "🥇" :
-
-index===1 ? "🥈" :
-
-index===2 ? "🥉" :
-
-"🏅";
-
-text +=
+                    text +=
 `${medal} **${user.username}**
-
-⭐ ${user.points} | ⏣ ${user.robux || 0} | 🦅 ${user.garuda || 0} | 🏗️ ${user.monumen || 0}
+⭐ ${user.points} | 🦅 ${user.garuda || 0} | 🏗️ ${user.monumen || 0}
 
 `;
 
@@ -52,54 +47,47 @@ text +=
 
             }
 
-            const embed = new EmbedBuilder()
+            // ======================
+            // TOTAL ROBUX DIDAPAT
+            // ======================
 
-.setColor("#F1C40F")
+            let robuxText = "";
 
-.setTitle("Perolehan Poin")
-.setDescription(text)
-// ======================
-// TOTAL ROBUX DIDAPAT
-// ======================
+            users.forEach((user) => {
 
-let robuxText = "";
-
-users.forEach((user) => {
-
-    robuxText +=
+                robuxText +=
 `${user.username} — 💎 ${user.robux || 0} ⏣\n`;
 
-});
+            });
 
-// ======================
-// EMBED
-// ======================
+            // ======================
+            // EMBED
+            // ======================
 
-const embed = new EmbedBuilder()
+            const embed = new EmbedBuilder()
 
-.setColor("#F1C40F")
+                .setColor("#F1C40F")
 
-.setTitle("🏆 LEADERBOARD KEMERDEKAAN")
+                .setTitle("🏆 LEADERBOARD KEMERDEKAAN")
 
-.setDescription(
-
+                .setDescription(
 `${text}
-
 ━━━━━━━━━━━━━━━━━━━━
 
 💎 **TOTAL ROBUX DIDAPAT**
 
 ${robuxText}`
+                )
 
-)
+                .setFooter({
+                    text: "🇮🇩 Event Kemerdekaan 2026"
+                })
 
-.setFooter({
+                .setTimestamp();
 
-text:"🇮🇩 Event Kemerdekaan 2026"
-
-})
-
-.setTimestamp();
+            // ======================
+            // UPDATE PESAN LAMA
+            // ======================
 
             if (database.events.leaderboardMessage) {
 
@@ -118,6 +106,10 @@ text:"🇮🇩 Event Kemerdekaan 2026"
                 } catch (err) {}
 
             }
+
+            // ======================
+            // BUAT PESAN BARU
+            // ======================
 
             const msg = await channel.send({
                 embeds: [embed]
