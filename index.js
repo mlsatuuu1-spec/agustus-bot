@@ -67,7 +67,8 @@ client.on("interactionCreate", async interaction => {
         await garuda.handle(interaction);
         await monumen.handle(interaction);
         await tukar.handle(interaction);
-       
+        await curi.handle(interaction);
+        
     } catch (err) {
 
         console.error(err);
