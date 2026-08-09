@@ -30,6 +30,7 @@ const garuda = new Garuda(client);
 const leaderboard = new Leaderboard(client);
 const monumen = new Monumen(client);
 const tukar=new Tukar(client);
+const curi = new CuriPoin(client);
 
 
 // ======================
