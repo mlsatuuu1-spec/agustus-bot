@@ -560,11 +560,11 @@ user.streak=0;
 
 }
 
-// Maksimal hadiah 50 poin
+// Maksimal hadiah 25 poin
 
-if(reward.point > 50){
+if(reward.point > 25){
 
-    reward.point = 50;
+    reward.point = 25;
 
 }
 
