@@ -13,23 +13,35 @@ class CuriPoin {
 
         this.client = client;
 
-        // Cooldown pencuri
+        // =====================
+        // COOLDOWN PENCURI
+        // =====================
+
         this.cooldown = new Map();
 
-        // Cooldown korban
+        // =====================
+        // COOLDOWN TARGET
+        // =====================
+
         this.targetCooldown = new Map();
 
-        // Pencurian yang sedang berlangsung
+        // =====================
+        // PENCURIAN AKTIF
+        // =====================
+
         this.activeThefts = new Map();
 
-        // Pesan utama game
+        // =====================
+        // PESAN UTAMA
+        // =====================
+
         this.message = null;
 
     }
 
-    // =====================
+    // ==================================================
     // EMBED UTAMA
-    // =====================
+    // ==================================================
 
     buildEmbed() {
 
@@ -41,10 +53,9 @@ class CuriPoin {
 
             .setDescription(
 
-`💰 **CURIGAN POIN DIMULAI!**
+`💰 **MISI PENCURIAN**
 
-Setiap member bisa mencoba mencuri
-poin member lain.
+Berani mencuri poin member lain?
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -52,12 +63,13 @@ poin member lain.
 
 Klik tombol **Curi Poin**.
 
-Bot akan memilih target secara random.
+Bot akan memilih target secara
+random dari member yang memenuhi syarat.
 
 💰 Maksimal curian:
 **10 Poin**
 
-⏳ Cooldown:
+⏱️ Cooldown:
 **1 Jam**
 
 ━━━━━━━━━━━━━━━━━━━━
@@ -73,7 +85,16 @@ Jika target berhasil menahan:
 
 Jika target tidak melakukan apa-apa:
 
-🥷 Pencuri berhasil mendapatkan poin.`
+💰 Pencurian berhasil.
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚠️ **Syarat**
+
+• Minimal memiliki 10 poin
+• Tidak bisa mencuri diri sendiri
+• Target tidak bisa dicuri berulang kali
+• Poin tidak bisa turun di bawah 0`
 
             )
 
@@ -85,9 +106,9 @@ Jika target tidak melakukan apa-apa:
 
     }
 
-    // =====================
+    // ==================================================
     // BUTTON UTAMA
-    // =====================
+    // ==================================================
 
     buildButton() {
 
@@ -109,9 +130,9 @@ Jika target tidak melakukan apa-apa:
 
     }
 
-    // =====================
+    // ==================================================
     // START
-    // =====================
+    // ==================================================
 
     async start() {
 
@@ -120,7 +141,7 @@ Jika target tidak melakukan apa-apa:
         if (!process.env.CURI_CHANNEL) {
 
             console.log(
-                "⚠️ CURI_CHANNEL belum diset di Railway."
+                "⚠️ CURI_CHANNEL belum diset."
             );
 
             return;
@@ -152,26 +173,27 @@ Jika target tidak melakukan apa-apa:
             // KIRIM PANEL
             // =====================
 
-            this.message = await channel.send({
+            this.message =
+                await channel.send({
 
-                embeds: [
-                    this.buildEmbed()
-                ],
+                    embeds: [
+                        this.buildEmbed()
+                    ],
 
-                components: [
-                    this.buildButton()
-                ]
+                    components: [
+                        this.buildButton()
+                    ]
 
-            });
+                });
 
             console.log(
-                "🥷 Panel Curi Poin berhasil dibuat."
+                "🥷 Panel Curi Poin aktif."
             );
 
         } catch (err) {
 
             console.error(
-                "❌ Gagal menjalankan Curi Poin:",
+                "❌ Gagal membuat panel Curi Poin:",
                 err
             );
 
@@ -179,20 +201,22 @@ Jika target tidak melakukan apa-apa:
 
     }
 
-    // =====================
-    // HANDLE INTERACTION
-    // =====================
+    // ==================================================
+    // HANDLE BUTTON
+    // ==================================================
 
     async handle(interaction) {
 
-        if (!interaction.isButton()) return;
+        if (!interaction.isButton())
+            return;
 
         // =====================
-        // TOMBOL CURI
+        // CURI POIN
         // =====================
 
         if (
-            interaction.customId === "curi_poin"
+            interaction.customId ===
+            "curi_poin"
         ) {
 
             await this.steal(interaction);
@@ -202,7 +226,7 @@ Jika target tidak melakukan apa-apa:
         }
 
         // =====================
-        // TOMBOL TAHAN
+        // TAHAN CURIAN
         // =====================
 
         if (
@@ -219,9 +243,9 @@ Jika target tidak melakukan apa-apa:
 
     }
 
-    // =====================
+    // ==================================================
     // MULAI PENCURIAN
-    // =====================
+    // ==================================================
 
     async steal(interaction) {
 
@@ -233,21 +257,26 @@ Jika target tidak melakukan apa-apa:
 
         const now = Date.now();
 
-        // =====================
+        // ==================================================
         // CEK COOLDOWN PENCURI
-        // =====================
+        // ==================================================
 
         const lastSteal =
-            this.cooldown.get(thiefId) || 0;
+            this.cooldown.get(
+                thiefId
+            ) || 0;
+
+        const cooldownTime =
+            60 * 60 * 1000;
 
         if (
             now - lastSteal <
-            60 * 60 * 1000
+            cooldownTime
         ) {
 
             const remaining =
-                (lastSteal +
-                    60 * 60 * 1000) -
+                lastSteal +
+                cooldownTime -
                 now;
 
             const minutes =
@@ -258,7 +287,7 @@ Jika target tidak melakukan apa-apa:
             return interaction.reply({
 
                 content:
-                    `⏳ Kamu masih dalam cooldown.\n\n` +
+                    `⏳ Kamu masih cooldown!\n\n` +
                     `🥷 Bisa mencuri lagi dalam **${minutes} menit**.`,
 
                 ephemeral: true
@@ -267,9 +296,9 @@ Jika target tidak melakukan apa-apa:
 
         }
 
-        // =====================
-        // CEK DATA PENCURI
-        // =====================
+        // ==================================================
+        // DATA PENCURI
+        // ==================================================
 
         const thief =
             database.getUser(
@@ -277,11 +306,13 @@ Jika target tidak melakukan apa-apa:
                 thiefUsername
             );
 
-        // =====================
+        // ==================================================
         // MINIMAL 10 POIN
-        // =====================
+        // ==================================================
 
-        if (thief.points < 10) {
+        if (
+            (thief.points || 0) < 10
+        ) {
 
             return interaction.reply({
 
@@ -294,9 +325,9 @@ Jika target tidak melakukan apa-apa:
 
         }
 
-        // =====================
+        // ==================================================
         // CARI TARGET
-        // =====================
+        // ==================================================
 
         const allUsers =
             database.leaderboard();
@@ -304,12 +335,25 @@ Jika target tidak melakukan apa-apa:
         const possibleTargets =
             allUsers.filter(user => {
 
-                if (user.id === thiefId)
+                // Tidak boleh diri sendiri
+                if (
+                    user.id === thiefId
+                ) {
+
                     return false;
 
-                if ((user.points || 0) < 10)
+                }
+
+                // Target minimal 10 poin
+                if (
+                    (user.points || 0) < 10
+                ) {
+
                     return false;
 
+                }
+
+                // Target sedang dilindungi cooldown
                 const targetLast =
                     this.targetCooldown.get(
                         user.id
@@ -317,7 +361,7 @@ Jika target tidak melakukan apa-apa:
 
                 if (
                     now - targetLast <
-                    60 * 60 * 1000
+                    cooldownTime
                 ) {
 
                     return false;
@@ -328,9 +372,9 @@ Jika target tidak melakukan apa-apa:
 
             });
 
-        // =====================
+        // ==================================================
         // TIDAK ADA TARGET
-        // =====================
+        // ==================================================
 
         if (
             possibleTargets.length === 0
@@ -339,7 +383,7 @@ Jika target tidak melakukan apa-apa:
             return interaction.reply({
 
                 content:
-                    "🥷 Tidak ada target yang bisa dicuri saat ini.",
+                    "🥷 Saat ini tidak ada target yang bisa dicuri.",
 
                 ephemeral: true
 
@@ -347,9 +391,9 @@ Jika target tidak melakukan apa-apa:
 
         }
 
-        // =====================
-        // PILIH TARGET RANDOM
-        // =====================
+        // ==================================================
+        // RANDOM TARGET
+        // ==================================================
 
         const target =
             possibleTargets[
@@ -359,9 +403,9 @@ Jika target tidak melakukan apa-apa:
                 )
             ];
 
-        // =====================
+        // ==================================================
         // JUMLAH CURIAN
-        // =====================
+        // ==================================================
 
         const amount =
             Math.min(
@@ -369,16 +413,16 @@ Jika target tidak melakukan apa-apa:
                 target.points
             );
 
-        // =====================
-        // BUAT ID PENCURIAN
-        // =====================
+        // ==================================================
+        // ID PENCURIAN
+        // ==================================================
 
         const theftId =
             `${thiefId}_${target.id}_${Date.now()}`;
 
-        // =====================
-        // COOLDOWN LANGSUNG
-        // =====================
+        // ==================================================
+        // SET COOLDOWN
+        // ==================================================
 
         this.cooldown.set(
             thiefId,
@@ -390,12 +434,14 @@ Jika target tidak melakukan apa-apa:
             now
         );
 
-        // =====================
+        // ==================================================
         // SIMPAN PENCURIAN
-        // =====================
+        // ==================================================
 
         this.activeThefts.set(
+
             theftId,
+
             {
 
                 thiefId,
@@ -410,14 +456,17 @@ Jika target tidak melakukan apa-apa:
 
                 amount,
 
-                resolved: false
+                resolved: false,
+
+                alertMessage: null
 
             }
+
         );
 
-        // =====================
+        // ==================================================
         // BALAS PENCURI
-        // =====================
+        // ==================================================
 
         await interaction.reply({
 
@@ -428,16 +477,16 @@ Jika target tidak melakukan apa-apa:
 
         });
 
-        // =====================
-        // CARI CHANNEL
-        // =====================
+        // ==================================================
+        // CHANNEL
+        // ==================================================
 
         const channel =
             interaction.channel;
 
-        // =====================
-        // TOMBOL TAHAN
-        // =====================
+        // ==================================================
+        // BUTTON TAHAN
+        // ==================================================
 
         const row =
             new ActionRowBuilder()
@@ -462,24 +511,27 @@ Jika target tidak melakukan apa-apa:
 
                 );
 
-        // =====================
-        // NOTIF TARGET
-        // =====================
+        // ==================================================
+        // PESAN TARGET
+        // ==================================================
 
-        await channel.send({
+        const alertMessage =
+            await channel.send({
 
-            content:
-                `<@${target.id}> 🚨 **POINMU SEDANG DICURI!**`,
+                content:
+                    `<@${target.id}> 🚨 **POINMU SEDANG DICURI!**`,
 
-            embeds: [
+                embeds: [
 
-                new EmbedBuilder()
+                    new EmbedBuilder()
 
-                    .setColor("#E74C3C")
+                        .setColor("#E74C3C")
 
-                    .setTitle("🥷 PENCURIAN TERDETEKSI!")
+                        .setTitle(
+                            "🥷 PENCURIAN TERDETEKSI!"
+                        )
 
-                    .setDescription(
+                        .setDescription(
 
 `**${thief.username}** sedang mencoba mencuri poinmu!
 
@@ -502,34 +554,50 @@ untuk mempertahankan poinmu.
 Jika tidak melakukan apa-apa,
 pencurian akan berhasil.`
 
-                    )
+                        )
 
-                    .setFooter({
-                        text:
-                            "🇮🇩 Lindungi poinmu!"
-                    })
+                        .setFooter({
+                            text:
+                                "🇮🇩 Lindungi poinmu!"
+                        })
 
-                    .setTimestamp()
+                        .setTimestamp()
 
-            ],
+                ],
 
-            components: [
-                row
-            ],
+                components: [
+                    row
+                ],
 
-            allowedMentions: {
+                allowedMentions: {
 
-                users: [
-                    target.id
-                ]
+                    users: [
+                        target.id
+                    ]
 
-            }
+                }
 
-        });
+            });
 
-        // =====================
-        // WAKTU 30 DETIK
-        // =====================
+        // ==================================================
+        // SIMPAN PESAN
+        // ==================================================
+
+        const theft =
+            this.activeThefts.get(
+                theftId
+            );
+
+        if (theft) {
+
+            theft.alertMessage =
+                alertMessage;
+
+        }
+
+        // ==================================================
+        // AUTO SELESAI 30 DETIK
+        // ==================================================
 
         setTimeout(
             async () => {
@@ -544,9 +612,9 @@ pencurian akan berhasil.`
 
     }
 
-    // =====================
+    // ==================================================
     // TAHAN CURIAN
-    // =====================
+    // ==================================================
 
     async defend(interaction) {
 
@@ -563,9 +631,9 @@ pencurian akan berhasil.`
                 theftId
             );
 
-        // =====================
-        // PENCURIAN TIDAK ADA
-        // =====================
+        // ==================================================
+        // TIDAK ADA
+        // ==================================================
 
         if (!theft) {
 
@@ -580,11 +648,13 @@ pencurian akan berhasil.`
 
         }
 
-        // =====================
+        // ==================================================
         // SUDAH SELESAI
-        // =====================
+        // ==================================================
 
-        if (theft.resolved) {
+        if (
+            theft.resolved
+        ) {
 
             return interaction.reply({
 
@@ -597,9 +667,9 @@ pencurian akan berhasil.`
 
         }
 
-        // =====================
+        // ==================================================
         // HANYA TARGET
-        // =====================
+        // ==================================================
 
         if (
             interaction.user.id !==
@@ -617,33 +687,31 @@ pencurian akan berhasil.`
 
         }
 
-        // =====================
-        // TANDAI SELESAI
-        // =====================
+        // ==================================================
+        // SELESAIKAN
+        // ==================================================
 
         theft.resolved = true;
 
-        // =====================
+        // ==================================================
         // KURANGI POIN PENCURI
-        // =====================
-
-        const thief =
-            database.getUser(
-                theft.thiefId,
-                theft.thiefUsername
-            );
+        // ==================================================
 
         database.removePoint(
+
             theft.thiefId,
+
             theft.thiefUsername,
+
             10
+
         );
 
         database.saveUsers();
 
-        // =====================
+        // ==================================================
         // UPDATE LEADERBOARD
-        // =====================
+        // ==================================================
 
         try {
 
@@ -660,13 +728,16 @@ pencurian akan berhasil.`
 
         }
 
-        // =====================
-        // UPDATE PESAN
-        // =====================
+        // ==================================================
+        // UBAH PESAN
+        // ==================================================
 
         try {
 
             await interaction.message.edit({
+
+                content:
+                    "🛡️ **CURIAN DIGAGALKAN!**",
 
                 embeds: [
 
@@ -713,9 +784,26 @@ pencurian akan berhasil.`
 
         }
 
-        // =====================
+        // ==================================================
+        // HAPUS PESAN SETELAH 10 DETIK
+        // ==================================================
+
+        setTimeout(
+            async () => {
+
+                try {
+
+                    await interaction.message.delete();
+
+                } catch (err) {}
+
+            },
+            10000
+        );
+
+        // ==================================================
         // HAPUS DATA
-        // =====================
+        // ==================================================
 
         this.activeThefts.delete(
             theftId
@@ -723,9 +811,9 @@ pencurian akan berhasil.`
 
     }
 
-    // =====================
-    // PENCURIAN SELESAI
-    // =====================
+    // ==================================================
+    // PENCURIAN BERHASIL
+    // ==================================================
 
     async finishTheft(theftId) {
 
@@ -734,33 +822,47 @@ pencurian akan berhasil.`
                 theftId
             );
 
-        if (!theft) return;
+        if (!theft)
+            return;
 
-        if (theft.resolved) return;
+        if (theft.resolved)
+            return;
+
+        // ==================================================
+        // SELESAI
+        // ==================================================
 
         theft.resolved = true;
 
-        // =====================
+        // ==================================================
         // PINDAHKAN POIN
-        // =====================
+        // ==================================================
 
         database.removePoint(
+
             theft.targetId,
+
             theft.targetUsername,
+
             theft.amount
+
         );
 
         database.addPoint(
+
             theft.thiefId,
+
             theft.thiefUsername,
+
             theft.amount
+
         );
 
         database.saveUsers();
 
-        // =====================
+        // ==================================================
         // UPDATE LEADERBOARD
-        // =====================
+        // ==================================================
 
         try {
 
@@ -777,44 +879,32 @@ pencurian akan berhasil.`
 
         }
 
-        // =====================
-        // CARI CHANNEL
-        // =====================
+        // ==================================================
+        // UPDATE PESAN PENCURIAN
+        // ==================================================
 
-        let channel = null;
+        if (
+            theft.alertMessage
+        ) {
 
-        try {
+            try {
 
-            channel =
-                await this.client.channels.fetch(
-                    process.env.CURI_CHANNEL
-                );
+                await theft.alertMessage.edit({
 
-        } catch (err) {
+                    content:
+                        "🥷 **PENCURIAN BERHASIL!**",
 
-            console.error(err);
+                    embeds: [
 
-        }
+                        new EmbedBuilder()
 
-        // =====================
-        // HASIL
-        // =====================
+                            .setColor("#9B59B6")
 
-        if (channel) {
+                            .setTitle(
+                                "🥷 PENCURIAN BERHASIL!"
+                            )
 
-            await channel.send({
-
-                embeds: [
-
-                    new EmbedBuilder()
-
-                        .setColor("#9B59B6")
-
-                        .setTitle(
-                            "🥷 PENCURIAN BERHASIL!"
-                        )
-
-                        .setDescription(
+                            .setDescription(
 
 `💰 **${theft.thiefUsername}** berhasil mencuri dari **${theft.targetUsername}**!
 
@@ -831,37 +921,38 @@ pencurian akan berhasil.`
 ⏳ Pencurian berikutnya bisa dilakukan
 setelah cooldown.`
 
-                        )
+                            )
 
-                        .setFooter({
+                            .setFooter({
 
-                            text:
-                                "🇮🇩 Event Kemerdekaan 2026"
+                                text:
+                                    "🇮🇩 Event Kemerdekaan 2026"
 
-                        })
+                            })
 
-                        .setTimestamp()
+                            .setTimestamp()
 
-                ]
+                    ],
 
-            });
+                    components: []
 
-        }
+                });
 
-        // =====================
-        // HAPUS DATA
-        // =====================
+                // ==================================================
+                // HAPUS SETELAH 10 DETIK
+                // ==================================================
 
-        this.activeThefts.delete(
-            theftId
-        );
+                setTimeout(
+                    async () => {
 
-    }
+                        try {
 
-}
+                            await theft.alertMessage.delete();
 
-// =====================
-// EXPORT
-// =====================
+                        } catch (err) {}
 
-module.exports = CuriPoin;
+                    },
+                    10000
+                );
+
+            } catch
