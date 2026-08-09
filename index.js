@@ -50,7 +50,7 @@ client.once("ready", async () => {
 garuda.start();
 monumen.start();
 tukar.start();
-
+curi.start();
 
 leaderboard.update();
 
