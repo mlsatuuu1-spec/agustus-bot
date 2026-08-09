@@ -963,7 +963,6 @@ setelah cooldown.`
 
             }
 
-        }
 
         // ==================================================
         // HAPUS DATA PENCURIAN
