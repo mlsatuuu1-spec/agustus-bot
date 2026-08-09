@@ -13,6 +13,8 @@ const Monumen = require("./monumen");
 
 const Tukar=require("./tukar");
 
+const CuriPoin = require("./curi");
+
 
 const client = new Client({
     intents: [
