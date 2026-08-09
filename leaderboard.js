@@ -17,9 +17,17 @@ class Leaderboard {
                 process.env.LEADERBOARD_CHANNEL
             );
 
-            const users = database
-                .leaderboard()
-                .slice(0, 10);
+            // ======================
+            // SEMUA USER
+            // ======================
+
+            const allUsers = database.leaderboard();
+
+            // ======================
+            // TOP 10 LEADERBOARD
+            // ======================
+
+            const users = allUsers.slice(0, 10);
 
             let text = "";
 
@@ -48,17 +56,27 @@ class Leaderboard {
             }
 
             // ======================
-            // TOTAL ROBUX DIDAPAT
+            // TOTAL ROBUX
+            // SEMUA USER
             // ======================
 
             let robuxText = "";
 
-            users.forEach((user) => {
+            allUsers
+                .filter(user => (user.robux || 0) > 0)
+                .forEach(user => {
 
-                robuxText +=
-`${user.username} — 💎 ${user.robux || 0} ⏣\n`;
+                    robuxText +=
+`${user.username} — 💎 ${user.robux} ⏣\n`;
 
-            });
+                });
+
+            if (!robuxText) {
+
+                robuxText =
+                    "Belum ada yang menukar Robux.";
+
+            }
 
             // ======================
             // EMBED
@@ -76,7 +94,9 @@ class Leaderboard {
 
 💎 **TOTAL ROBUX DIDAPAT**
 
-${robuxText}`
+${robuxText}
+
+━━━━━━━━━━━━━━━━━━━━`
                 )
 
                 .setFooter({
@@ -103,7 +123,13 @@ ${robuxText}`
 
                     return;
 
-                } catch (err) {}
+                } catch (err) {
+
+                    console.log(
+                        "⚠️ Pesan leaderboard lama tidak ditemukan."
+                    );
+
+                }
 
             }
 
@@ -121,7 +147,10 @@ ${robuxText}`
 
         } catch (err) {
 
-            console.error(err);
+            console.error(
+                "❌ Leaderboard Error:",
+                err
+            );
 
         }
 
