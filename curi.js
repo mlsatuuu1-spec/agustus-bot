@@ -335,7 +335,6 @@ Jika target tidak melakukan apa-apa:
         const possibleTargets =
             allUsers.filter(user => {
 
-                // Tidak boleh diri sendiri
                 if (
                     user.id === thiefId
                 ) {
@@ -344,7 +343,6 @@ Jika target tidak melakukan apa-apa:
 
                 }
 
-                // Target minimal 10 poin
                 if (
                     (user.points || 0) < 10
                 ) {
@@ -353,7 +351,6 @@ Jika target tidak melakukan apa-apa:
 
                 }
 
-                // Target sedang dilindungi cooldown
                 const targetLast =
                     this.targetCooldown.get(
                         user.id
@@ -632,7 +629,7 @@ pencurian akan berhasil.`
             );
 
         // ==================================================
-        // TIDAK ADA
+        // CEK PENCURIAN
         // ==================================================
 
         if (!theft) {
@@ -649,7 +646,7 @@ pencurian akan berhasil.`
         }
 
         // ==================================================
-        // SUDAH SELESAI
+        // CEK SUDAH SELESAI
         // ==================================================
 
         if (
@@ -668,7 +665,7 @@ pencurian akan berhasil.`
         }
 
         // ==================================================
-        // HANYA TARGET
+        // HANYA TARGET YANG BOLEH MENAHAN
         // ==================================================
 
         if (
@@ -688,13 +685,13 @@ pencurian akan berhasil.`
         }
 
         // ==================================================
-        // SELESAIKAN
+        // SELESAIKAN PENCURIAN
         // ==================================================
 
         theft.resolved = true;
 
         // ==================================================
-        // KURANGI POIN PENCURI
+        // PENCURI KENA -10
         // ==================================================
 
         database.removePoint(
@@ -708,6 +705,28 @@ pencurian akan berhasil.`
         );
 
         database.saveUsers();
+
+        // ==================================================
+        // LOG KE CHANNEL PEROLEHAN POIN
+        // ==================================================
+
+        await this.sendPointLog(
+
+            "defend",
+
+            {
+
+                thiefUsername:
+                    theft.thiefUsername,
+
+                targetUsername:
+                    theft.targetUsername,
+
+                amount: 10
+
+            }
+
+        );
 
         // ==================================================
         // UPDATE LEADERBOARD
@@ -724,12 +743,15 @@ pencurian akan berhasil.`
 
         } catch (err) {
 
-            console.error(err);
+            console.error(
+                "❌ Leaderboard error:",
+                err
+            );
 
         }
 
         // ==================================================
-        // UBAH PESAN
+        // UBAH PESAN MENJADI HASIL
         // ==================================================
 
         try {
@@ -758,7 +780,7 @@ pencurian akan berhasil.`
 🥷 Pencuri:
 **${theft.thiefUsername}**
 
-💀 Hukuman:
+💀 Hukuman pencuri:
 **-10 Poin**
 
 💰 Target kehilangan:
@@ -770,6 +792,13 @@ pencurian akan berhasil.`
 
                         )
 
+                        .setFooter({
+
+                            text:
+                                "🇮🇩 Event Kemerdekaan 2026"
+
+                        })
+
                         .setTimestamp()
 
                 ],
@@ -780,7 +809,10 @@ pencurian akan berhasil.`
 
         } catch (err) {
 
-            console.error(err);
+            console.error(
+                "❌ Gagal update pesan curian:",
+                err
+            );
 
         }
 
@@ -789,6 +821,7 @@ pencurian akan berhasil.`
         // ==================================================
 
         setTimeout(
+
             async () => {
 
                 try {
@@ -798,11 +831,13 @@ pencurian akan berhasil.`
                 } catch (err) {}
 
             },
+
             10000
+
         );
 
         // ==================================================
-        // HAPUS DATA
+        // HAPUS DATA PENCURIAN
         // ==================================================
 
         this.activeThefts.delete(
@@ -822,20 +857,26 @@ pencurian akan berhasil.`
                 theftId
             );
 
+        // ==================================================
+        // CEK DATA
+        // ==================================================
+
         if (!theft)
             return;
 
-        if (theft.resolved)
+        if (
+            theft.resolved
+        )
             return;
 
         // ==================================================
-        // SELESAI
+        // TANDAI SELESAI
         // ==================================================
 
         theft.resolved = true;
 
         // ==================================================
-        // PINDAHKAN POIN
+        // KURANGI POIN KORBAN
         // ==================================================
 
         database.removePoint(
@@ -848,6 +889,10 @@ pencurian akan berhasil.`
 
         );
 
+        // ==================================================
+        // TAMBAH POIN PENCURI
+        // ==================================================
+
         database.addPoint(
 
             theft.thiefId,
@@ -859,6 +904,29 @@ pencurian akan berhasil.`
         );
 
         database.saveUsers();
+
+        // ==================================================
+        // LOG KE CHANNEL PEROLEHAN POIN
+        // ==================================================
+
+        await this.sendPointLog(
+
+            "success",
+
+            {
+
+                thiefUsername:
+                    theft.thiefUsername,
+
+                targetUsername:
+                    theft.targetUsername,
+
+                amount:
+                    theft.amount
+
+            }
+
+        );
 
         // ==================================================
         // UPDATE LEADERBOARD
@@ -875,7 +943,10 @@ pencurian akan berhasil.`
 
         } catch (err) {
 
-            console.error(err);
+            console.error(
+                "❌ Leaderboard error:",
+                err
+            );
 
         }
 
@@ -938,41 +1009,201 @@ setelah cooldown.`
 
                 });
 
-                // ==================================================
-                // HAPUS SETELAH 10 DETIK
-                // ==================================================
+            } catch (err) {
 
-                setTimeout(
-                    async () => {
-
-                        try {
-
-                            await theft.alertMessage.delete();
-
-                        } catch (err) {}
-
-                    },
-                    10000
+                console.error(
+                    "❌ Gagal update pesan pencurian:",
+                    err
                 );
-
-                            } catch (err) {
-
-                    console.error(err);
-
-                }
 
             }
 
+        }
 
         // ==================================================
-        // HAPUS DATA PENCURIAN
+        // HAPUS PESAN SETELAH 10 DETIK
         // ==================================================
 
-        this.activeThefts.delete(
-            theftId
-        );
+        if (
+            theft.alertMessage
+        ) {
+
+            setTimeout(
+
+                async () => {
+
+                    try {
+
+                        await theft.alertMessage.delete();
+
+                    } catch (err) {}
+
+                },
+
+                10000
+
+            );
+
+        }
 
     }
+
+    // ==================================================
+    // LOG KE CHANNEL PEROLEHAN POIN
+    // ==================================================
+
+    async sendPointLog(type, data) {
+
+        // ==================================================
+        // CEK CHANNEL
+        // ==================================================
+
+        if (!process.env.LOG_CHANNEL)
+            return;
+
+        try {
+
+            const channel =
+                await this.client.channels.fetch(
+                    process.env.LOG_CHANNEL
+                );
+
+            // ==================================================
+            // CURI BERHASIL
+            // ==================================================
+
+            if (
+                type === "success"
+            ) {
+
+                const embed =
+                    new EmbedBuilder()
+
+                        .setColor("#9B59B6")
+
+                        .setTitle(
+                            "🥷 CURI POIN BERHASIL"
+                        )
+
+                        .setDescription(
+
+`💰 **${data.thiefUsername}** berhasil mencuri poin!
+
+━━━━━━━━━━━━━━━━━━━━
+
+🥷 **Pencuri**
+${data.thiefUsername}
+
+💰 **Mendapatkan**
+**+${data.amount} Poin**
+
+💀 **Korban**
+${data.targetUsername}
+
+📉 **Kehilangan**
+**-${data.amount} Poin**
+
+━━━━━━━━━━━━━━━━━━━━
+
+🎉 Pencurian berhasil!`
+
+                        )
+
+                        .setFooter({
+
+                            text:
+                                "🇮🇩 Perolehan Poin • Event Kemerdekaan 2026"
+
+                        })
+
+                        .setTimestamp();
+
+                await channel.send({
+
+                    embeds: [
+                        embed
+                    ]
+
+                });
+
+                return;
+
+            }
+
+            // ==================================================
+            // CURI GAGAL / DITAHAN
+            // ==================================================
+
+            if (
+                type === "defend"
+            ) {
+
+                const embed =
+                    new EmbedBuilder()
+
+                        .setColor("#E74C3C")
+
+                        .setTitle(
+                            "🛡️ CURI POIN DIGAGALKAN"
+                        )
+
+                        .setDescription(
+
+`🛡️ **${data.targetUsername}** berhasil menahan pencurian!
+
+━━━━━━━━━━━━━━━━━━━━
+
+🥷 **Pencuri**
+${data.thiefUsername}
+
+💀 **Hukuman**
+**-10 Poin**
+
+🛡️ **Korban**
+${data.targetUsername}
+
+💰 **Kehilangan Korban**
+**0 Poin**
+
+━━━━━━━━━━━━━━━━━━━━
+
+❌ Pencurian berhasil digagalkan!`
+
+                        )
+
+                        .setFooter({
+
+                            text:
+                                "🇮🇩 Perolehan Poin • Event Kemerdekaan 2026"
+
+                        })
+
+                        .setTimestamp();
+
+                await channel.send({
+
+                    embeds: [
+                        embed
+                    ]
+
+                });
+
+            }
+
+        } catch (err) {
+
+            console.error(
+                "❌ Gagal mengirim log Curi Poin:",
+                err
+            );
+
+        }
+
+    }
+
+    // ==================================================
+    // END OF CLASS
+    // ==================================================
 
 }
 
