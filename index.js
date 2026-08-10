@@ -15,6 +15,7 @@ const Tukar=require("./tukar");
 
 const CuriPoin = require("./curi");
 
+const Quiz = require("./quiz");
 
 const client = new Client({
     intents: [
@@ -31,7 +32,7 @@ const leaderboard = new Leaderboard(client);
 const monumen = new Monumen(client);
 const tukar=new Tukar(client);
 const curi = new CuriPoin(client);
-
+const quiz = new Quiz(client);
 
 // ======================
 // READY
@@ -51,6 +52,7 @@ garuda.start();
 monumen.start();
 tukar.start();
 curi.start();
+quiz.start();
 
 leaderboard.update();
 
@@ -68,7 +70,8 @@ client.on("interactionCreate", async interaction => {
         await monumen.handle(interaction);
         await tukar.handle(interaction);
         await curi.handle(interaction);
-        
+        await quiz.handle(interaction);
+
     } catch (err) {
 
         console.error(err);
