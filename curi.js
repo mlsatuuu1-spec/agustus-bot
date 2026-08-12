@@ -267,7 +267,7 @@ Jika target tidak melakukan apa-apa:
             ) || 0;
 
         const cooldownTime =
-            60 * 60 * 1000;
+            30 * 60 * 1000;
 
         if (
             now - lastSteal <
@@ -388,19 +388,56 @@ Jika target tidak melakukan apa-apa:
 
         }
 
-        // ==================================================
-        // RANDOM TARGET
-        // ==================================================
+        // =// ==================================================
+// RANDOM TARGET BERDASARKAN JUMLAH POIN
+// Semakin banyak poin = semakin besar peluang
+// ==================================================
 
-        const target =
-            possibleTargets[
-                Math.floor(
-                    Math.random() *
-                    possibleTargets.length
-                )
-            ];
+const weightedTargets = [];
 
-        // ==================================================
+possibleTargets.forEach(user => {
+
+    const points = user.points || 0;
+
+    let weight = 1;
+
+    if (points >= 450) {
+
+        weight = 10;
+
+    } else if (points >= 400) {
+
+        weight = 7;
+
+    } else if (points >= 300) {
+
+        weight = 5;
+
+    } else if (points >= 200) {
+
+        weight = 3;
+
+    } else if (points >= 100) {
+
+        weight = 1;
+
+    }
+
+    for (let i = 0; i < weight; i++) {
+
+        weightedTargets.push(user);
+
+    }
+
+});
+
+const target =
+    weightedTargets[
+        Math.floor(
+            Math.random() *
+            weightedTargets.length
+        )
+    ]; ==================================================
         // JUMLAH CURIAN
         // ==================================================
 
