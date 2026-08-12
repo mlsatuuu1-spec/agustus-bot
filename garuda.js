@@ -29,7 +29,7 @@ this.today="";
 
 this.schedule=[];
 
-this.maxSpawn=10;
+this.maxSpawn=15;
 
 }
 
