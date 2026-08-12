@@ -70,7 +70,7 @@ random dari member yang memenuhi syarat.
 **10 Poin**
 
 ⏱️ Cooldown:
-**1 Jam**
+**30 Menit**
 
 ━━━━━━━━━━━━━━━━━━━━
 
