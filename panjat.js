@@ -1276,18 +1276,7 @@ Silakan mulai pertandingan baru!`
         // INFO HASIL KE PEMAIN
         // ==================================================
 
-        try {
-
-            await interaction.followUp({
-
-                content:
-                    `${resultText}\n\n🏗️ Tim kamu: **${team === "merah" ? "Merah 🔴" : "Biru 🔵"}**`,
-
-                ephemeral: true
-
-            });
-
-        } catch (err) {}
+        
 
     }
 
@@ -1591,44 +1580,28 @@ ${losers}
 
         setTimeout(async () => {
 
-    // ==============================
-    // RESET DATA PERTANDINGAN
-    // ==============================
-
     this.teams.merah = [];
-
     this.teams.biru = [];
 
     this.progress.merah = 0;
-
     this.progress.biru = 0;
 
     this.active = false;
-
     this.registering = false;
-
-    // ==============================
-    // BUAT PANEL BARU
-    // ==============================
 
     try {
 
-        const channel =
-            await this.client.channels.fetch(
-                process.env.PANJAT_CHANNEL
-            );
+        if (this.message) {
 
-        this.message =
-            await channel.send({
+            await this.message.edit({
+
+                content: null,
 
                 embeds: [
-
                     this.buildPanelEmbed()
-
                 ],
 
                 components: [
-
                     new ActionRowBuilder()
                         .addComponents(
 
@@ -1647,19 +1620,18 @@ ${losers}
                                 .setStyle(
                                     ButtonStyle.Success
                                 )
-                            )
-                        ]
+
+                        )
+                ]
 
             });
 
-        console.log(
-            "🌴 Panel Panjat Pinang baru siap."
-        );
+        }
 
     } catch (err) {
 
         console.error(
-            "❌ Gagal membuat panel Panjat Pinang baru:",
+            "❌ Gagal mengembalikan panel Panjat:",
             err
         );
 
