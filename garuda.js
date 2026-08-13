@@ -384,18 +384,6 @@ langsung tekan tombol tangkap!`;
                         description
                     )
 
-                    .addFields({
-
-                        name:
-                            "⏰ PERKIRAAN TURUN",
-
-                        value:
-                            `**${this.formatMinute(spawnMinute)} WIB**`,
-
-                        inline: true
-
-                    })
-
                     .setFooter({
 
                         text:
@@ -441,13 +429,20 @@ langsung tekan tombol tangkap!`;
             // ==================================================
 
             this.clueMessage =
-                await channel.send({
+    await channel.send({
 
-                    embeds: [
-                        embed
-                    ]
+        content:
+            "@everyone",
 
-                });
+        embeds: [
+            embed
+        ],
+
+        allowedMentions: {
+            parse: ["everyone"]
+        }
+
+    });
 
         } catch (err) {
 
@@ -536,16 +531,24 @@ langsung tekan tombol tangkap!`;
         // ==================================================
 
         const msg =
-            await channel.send({
+    await channel.send({
 
-                content:
-                    "🚨 **GARUDA TERLIHAT!!**",
+        content:
+            "@everyone 🚨 **GARUDA TERLIHAT!!**",
 
-                embeds: [
+        embeds: [
+            this.buildEmbed()
+        ],
 
-                    this.buildEmbed()
+        components: [
+            this.buildButton()
+        ],
 
-                ],
+        allowedMentions: {
+            parse: ["everyone"]
+        }
+
+    });
 
                 components: [
 
