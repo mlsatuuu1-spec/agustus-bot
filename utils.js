@@ -10,6 +10,7 @@ function random(min, max) {
 
 }
 
+
 // ======================
 // FORMAT ANGKA
 // ======================
@@ -20,36 +21,6 @@ function format(num) {
 
 }
 
-// ======================
-// TIER
-// ======================
-
-function getTier(points) {
-
-    if (points >= 2000)
-        return "🔥 Cashback Overlord";
-
-    if (points >= 1200)
-        return "👑 Cashback Sultan";
-
-    if (points >= 750)
-        return "💎 Cashback Elite";
-
-    if (points >= 400)
-        return "🏦 Cashback Investor";
-
-    if (points >= 200)
-        return "💰 Cashback Grinder";
-
-    if (points >= 75)
-        return "🪙 Cashback Hunter";
-
-    if (points >= 25)
-        return "💵 Cashback Rookie";
-
-    return "▫️ Belum ada Tier";
-
-}
 
 // ======================
 // GARUDA REWARD
@@ -57,103 +28,139 @@ function getTier(points) {
 
 const rewards = [
 
-{
-emoji:"🇮🇩",
-item:"Bendera Merah Putih",
-point:5,
-chance:8,
-text:"🇮🇩 Kamu berhasil menangkap Garuda!"
-},
+    // ======================
+    // 🟢 POSITIF — 55%
+    // ======================
 
-{
-emoji:"🎖️",
-item:"Medali Kemerdekaan",
-point:4,
-chance:15,
-text:"🎖️ Garuda menghadiahimu medali."
-},
+    {
+        emoji: "🇮🇩",
+        item: "Bendera Merah Putih",
+        point: 5,
+        chance: 12,
+        text:
+            "🇮🇩 Kamu berhasil menangkap Garuda!"
+    },
 
-{
-emoji:"🚗",
-item:"Avanza",
-point:50,
-chance:0.2,
-text:"🚗 JACKPOT!! Garuda menjatuhkan Avanza."
-},
+    {
+        emoji: "🎖️",
+        item: "Medali Kemerdekaan",
+        point: 4,
+        chance: 15,
+        text:
+            "🎖️ Garuda menghadiahimu medali."
+    },
 
-{
-emoji:"🍜",
-item:"Mie Ayam",
-point:2,
-chance:15,
-text:"🍜 Kamu mendapat mie ayam."
-},
+    {
+        emoji: "🍜",
+        item: "Mie Ayam",
+        point: 2,
+        chance: 15,
+        text:
+            "🍜 Kamu mendapat mie ayam."
+    },
 
-{
-emoji:"🥭",
-item:"Mangga",
-point:1,
-chance:20,
-text:"🥭 Garuda menjatuhkan mangga."
-},
+    {
+        emoji: "🥭",
+        item: "Mangga",
+        point: 2,
+        chance: 8,
+        text:
+            "🥭 Garuda menjatuhkan mangga."
+    },
 
-{
-emoji:"🩴",
-item:"Sandal Jepit",
-point:2,
-chance:10,
-text:"🩴 Lumayan dapat sandal."
-},
+    {
+        emoji: "🩴",
+        item: "Sandal Jepit",
+        point: 2,
+        chance: 5,
+        text:
+            "🩴 Lumayan! Kamu mendapat sandal."
+    },
 
-{
-emoji:"💩",
-item:"Tai Ayam",
-point:-5,
-chance:15,
-text:"💩 Astaga... Garuda malah menjatuhkan tai ayam."
-},
 
-{
-emoji:"🐄",
-item:"Tai Kebo",
-point:-15,
-chance:5,
-text:"🐄 Kamu kena tai kebo."
-},
+    // ======================
+    // 🔴 MINUS — 44%
+    // ======================
 
-{
-emoji:"🦟",
-item:"Nyamuk",
-point:-3,
-chance:5,
-text:"🦟 Digigit nyamuk."
-},
+    {
+        emoji: "💩",
+        item: "Tai Ayam",
+        point: -4,
+        chance: 15,
+        text:
+            "💩 Astaga... Garuda malah menjatuhkan tai ayam."
+    },
 
-{
-emoji:"🪨",
-item:"Kesandung Batu",
-point:-5,
-chance:6,
-text:"🪨 Kamu kesandung batu."
-},
+    {
+        emoji: "👹",
+        item: "Bu Juleha",
+        point: -4,
+        chance: 10,
+        text:
+            "👹 sial... Garuda malah kirim cocotan bu juleha."
+    },
 
-{
-emoji:"👑",
-item:"Mahkota Garuda",
-point:20,
-chance:0.5,
-text:"👑 JACKPOT!! Mahkota Garuda!"
-},
+    {
+        emoji: "🦟",
+        item: "Nyamuk",
+        point: -3,
+        chance: 8,
+        text:
+            "🦟 Kamu malah digigit nyamuk."
+    },
 
-{
-emoji:"💰",
-item:"Karung Robux",
-point:15,
-chance:0.3,
-text:"💰 JACKPOT!! Karung Robux!"
-}
+    {
+        emoji: "🐄",
+        item: "Tai Kebo",
+        point: -12,
+        chance: 6,
+        text:
+            "🐄 Waduh! Kamu kena tai kebo."
+    },
+
+    {
+        emoji: "☠️",
+        item: "Garuda Sial",
+        point: -15,
+        chance: 5,
+        text:
+            "☠️ GARUDA SIAL! Kamu kehilangan banyak poin."
+    },
+
+
+    // ======================
+    // 💎 JACKPOT — 1%
+    // ======================
+
+    {
+        emoji: "👑",
+        item: "Mahkota Garuda",
+        point: 20,
+        chance: 0.5,
+        text:
+            "👑 JACKPOT!! Kamu mendapatkan Mahkota Garuda!"
+    },
+
+    {
+        emoji: "💰",
+        item: "Karung Robux",
+        point: 15,
+        chance: 0.3,
+        text:
+            "💰 JACKPOT!! Garuda menjatuhkan Karung Robux!"
+    },
+
+    {
+        emoji: "🚗",
+        item: "Avanza",
+        point: 50,
+        chance: 0.2,
+        text:
+            "🚗 JACKPOT!! Garuda menjatuhkan Avanza!"
+    }
 
 ];
+
 
 // ======================
 // RANDOM HADIAH
@@ -163,24 +170,38 @@ function randomReward() {
 
     const total =
         rewards.reduce(
-            (sum, reward) => sum + reward.chance,
+            (sum, reward) =>
+                sum + reward.chance,
             0
         );
 
-    let roll = Math.random() * total;
+    let roll =
+        Math.random() * total;
 
-    for (const reward of rewards) {
+    for (
+        const reward of rewards
+    ) {
 
-        if (roll < reward.chance)
-            return reward;
+        if (
+            roll < reward.chance
+        ) {
+
+            return {
+                ...reward
+            };
+
+        }
 
         roll -= reward.chance;
 
     }
 
-    return rewards[0];
+    return {
+        ...rewards[0]
+    };
 
 }
+
 
 // ======================
 // MONUMEN
@@ -188,36 +209,37 @@ function randomReward() {
 
 const monuments = [
 
-"Monas",
+    "Monas",
 
-"Borobudur",
+    "Borobudur",
 
-"Prambanan",
+    "Prambanan",
 
-"Suramadu",
+    "Suramadu",
 
-"Jam Gadang",
+    "Jam Gadang",
 
-"GWK",
+    "Simpang Lima Gumul",
 
-"Tugu Pahlawan",
+    "Tugu Pahlawan",
 
-"Istana Merdeka"
+    "Istana Merdeka"
 
 ];
 
+
+// ======================
+// EXPORT
 // ======================
 
 module.exports = {
 
-random,
+    random,
 
-format,
+    format,
 
-getTier,
+    randomReward,
 
-randomReward,
-
-monuments
+    monuments
 
 };
