@@ -1650,12 +1650,10 @@ ${losers}
                             )
                         ]
 
-                ]
-
             });
 
         console.log(
-            "🏗️ Panel Panjat Pinang baru siap."
+            "🌴 Panel Panjat Pinang baru siap."
         );
 
     } catch (err) {
