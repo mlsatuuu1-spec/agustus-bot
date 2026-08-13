@@ -50,7 +50,7 @@ class Garuda {
 
         this.spawnedToday = new Set();
 
-        this.maxSpawn = 15;
+        this.maxSpawn = 22;
 
     }
 
