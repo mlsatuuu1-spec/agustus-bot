@@ -17,6 +17,8 @@ const CuriPoin = require("./curi");
 
 const Quiz = require("./quiz");
 
+const PanjatPinang = require("./panjat");
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds
@@ -33,6 +35,7 @@ const monumen = new Monumen(client);
 const tukar=new Tukar(client);
 const curi = new CuriPoin(client);
 const quiz = new Quiz(client);
+const panjat = new PanjatPinang(client);
 
 // ======================
 // READY
@@ -53,6 +56,7 @@ monumen.start();
 tukar.start();
 curi.start();
 quiz.start();
+panjat.start();
 
 leaderboard.update();
 
@@ -71,6 +75,7 @@ client.on("interactionCreate", async interaction => {
         await tukar.handle(interaction);
         await curi.handle(interaction);
         await quiz.handle(interaction);
+        await panjat.handle(interaction);
 
     } catch (err) {
 
