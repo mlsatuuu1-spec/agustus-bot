@@ -1647,7 +1647,7 @@ ${losers}
                                 .setStyle(
                                     ButtonStyle.Success
                                 )
-
+                            )
                         ]
 
                 ]
