@@ -550,22 +550,6 @@ langsung tekan tombol tangkap!`;
 
     });
 
-                components: [
-
-                    this.buildButton()
-
-                ],
-
-                allowedMentions: {
-
-                    parse: [
-                        "everyone"
-                    ]
-
-                }
-
-            });
-
         this.message =
             msg;
 
