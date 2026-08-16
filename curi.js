@@ -45,66 +45,76 @@ class CuriPoin {
 
     buildEmbed() {
 
-        return new EmbedBuilder()
+    return new EmbedBuilder()
 
-            .setColor("#8E44AD")
+        .setColor("#D62828")
 
-            .setTitle("🥷 CURI POIN")
+        .setTitle("🇮🇩 🥷 OPERASI CURI POIN")
 
-            .setDescription(
+        .setDescription(
 
-`💰 **MISI PENCURIAN**
+`🔥 **MISIKAN KEBERANIANMU DI HARI KEMERDEKAAN!**
 
-Berani mencuri poin member lain?
+Ada poin member lain yang menggiurkan?
+
+🥷 **CURI SEKARANG!**
 
 ━━━━━━━━━━━━━━━━━━━━
 
-🥷 **CARA BERMAIN**
+🎯 **CARA BERMAIN**
 
 Klik tombol **Curi Poin**.
 
 Bot akan memilih target secara
-random dari member yang memenuhi syarat.
+**random berdasarkan jumlah poin**.
 
-💰 Maksimal curian:
-**10 Poin**
-
-⏱️ Cooldown:
-**30 Menit**
+Semakin banyak poin yang dimiliki,
+semakin besar kemungkinan mereka
+menjadi target. 👀
 
 ━━━━━━━━━━━━━━━━━━━━
 
-🛡️ **TAHAN CURIAN**
+💰 **HADIAH & RISIKO**
 
-Target memiliki waktu **30 detik**
-untuk mempertahankan poinnya.
+💰 Berhasil mencuri:
+**hingga 10 poin**
 
-Jika target berhasil menahan:
+🛡️ Target punya:
+**30 detik** untuk bertahan
 
-🥷 Pencuri **-10 Poin**
-
-Jika target tidak melakukan apa-apa:
-
-💰 Pencurian berhasil.
+❌ Jika berhasil ditahan:
+Pencuri kehilangan **10 poin**
 
 ━━━━━━━━━━━━━━━━━━━━
 
-⚠️ **Syarat**
+⏱️ **COOLDOWN**
 
-• Minimal memiliki 10 poin
-• Tidak bisa mencuri diri sendiri
-• Target tidak bisa dicuri berulang kali
-• Poin tidak bisa turun di bawah 0`
+🥷 Bisa mencuri lagi setiap
+**5 menit**
 
-            )
+🛡️ Target juga mendapat
+perlindungan **5 menit**
 
-            .setFooter({
-                text: "🇮🇩 Event Kemerdekaan 2026"
-            })
+━━━━━━━━━━━━━━━━━━━━
 
-            .setTimestamp();
+🇮🇩 **17 AGUSTUS SPECIAL EVENT**
 
-    }
+⚔️ Rebut poin sebanyak-banyaknya!
+
+🔥 **MERDEKA ATAU KEHILANGAN POIN!**`
+
+        )
+
+        .setFooter({
+
+            text:
+                "🇮🇩 HUT KEMERDEKAAN • 17 AGUSTUS 2026"
+
+        })
+
+        .setTimestamp();
+
+}
 
     // ==================================================
     // BUTTON UTAMA
@@ -112,23 +122,23 @@ Jika target tidak melakukan apa-apa:
 
     buildButton() {
 
-        return new ActionRowBuilder()
+    return new ActionRowBuilder()
 
-            .addComponents(
+        .addComponents(
 
-                new ButtonBuilder()
+            new ButtonBuilder()
 
-                    .setCustomId("curi_poin")
+                .setCustomId("curi_poin")
 
-                    .setEmoji("🥷")
+                .setEmoji("🇮🇩")
 
-                    .setLabel("Curi Poin")
+                .setLabel("RAMPAS POIN!")
 
-                    .setStyle(ButtonStyle.Danger)
+                .setStyle(ButtonStyle.Danger)
 
-            );
+        );
 
-    }
+}
 
     // ==================================================
     // START
@@ -267,7 +277,7 @@ Jika target tidak melakukan apa-apa:
             ) || 0;
 
         const cooldownTime =
-            30 * 60 * 1000;
+            5 * 60 * 1000;
 
         if (
             now - lastSteal <
