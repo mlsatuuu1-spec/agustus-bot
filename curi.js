@@ -68,32 +68,29 @@ Klik tombol **Curi Poin**.
 Bot akan memilih target secara
 **random berdasarkan jumlah poin**.
 
-Semakin banyak poin yang dimiliki,
-semakin besar kemungkinan mereka
-menjadi target. 👀
 
 ━━━━━━━━━━━━━━━━━━━━
 
 💰 **HADIAH & RISIKO**
 
 💰 Berhasil mencuri:
-**hingga 10 poin**
+**hingga 20 poin**
 
 🛡️ Target punya:
 **30 detik** untuk bertahan
 
 ❌ Jika berhasil ditahan:
-Pencuri kehilangan **10 poin**
+Pencuri kehilangan **30 poin**
 
 ━━━━━━━━━━━━━━━━━━━━
 
 ⏱️ **COOLDOWN**
 
 🥷 Bisa mencuri lagi setiap
-**5 menit**
+**30 menit**
 
 🛡️ Target juga mendapat
-perlindungan **5 menit**
+perlindungan **30 menit**
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -277,7 +274,7 @@ perlindungan **5 menit**
             ) || 0;
 
         const cooldownTime =
-            5 * 60 * 1000;
+            30 * 60 * 1000;
 
         if (
             now - lastSteal <
@@ -454,7 +451,7 @@ const target =
 
         const amount =
             Math.min(
-                10,
+                20,
                 target.points
             );
 
@@ -770,7 +767,7 @@ pencurian akan berhasil.`
                 targetUsername:
                     theft.targetUsername,
 
-                amount: 10
+                amount: 20
 
             }
 
