@@ -47,7 +47,7 @@ class Leaderboard {
 
                     text +=
 `${medal} **${user.username}**
-⭐ ${user.points} | 🦅 ${user.garuda || 0} | 🏗️ ${user.monumen || 0}
+⭐ ${user.points || 0} | 🦅 ${user.garuda || 0} | 🏗️ ${user.monumen || 0}
 
 `;
 
@@ -64,16 +64,16 @@ class Leaderboard {
             let totalRobux = 0;
 
             allUsers
-    .filter(user => (user.robux || 0) > 0)
-    .forEach(user => {
+                .filter(user => (user.robux || 0) > 0)
+                .forEach(user => {
 
-        robuxText +=
-`${user.username} — 💎 ${user.robux} ⏣\n`;
+                    robuxText +=
+`${user.username} — 💎 ${user.robux} ⏣
+`;
 
-        totalRobux +=
-            user.robux || 0;
+                    totalRobux += Number(user.robux) || 0;
 
-    });
+                });
 
             if (!robuxText) {
 
@@ -90,7 +90,9 @@ class Leaderboard {
 
                 .setColor("#F1C40F")
 
-                .setTitle("🏆 LEADERBOARD KEMERDEKAAN")
+                .setTitle(
+                    "🏆 LEADERBOARD KEMERDEKAAN"
+                )
 
                 .setDescription(
 `${text}
@@ -99,13 +101,11 @@ class Leaderboard {
 💎 **TOTAL ROBUX DIDAPAT**
 
 ${robuxText}
-
 ━━━━━━━━━━━━━━━━━━━━
 
 💎 **TOTAL SEMUA ROBUX**
 # **${totalRobux} ⏣**
 
-━━━━━━━━━━━━━━━━━━━━`
 ━━━━━━━━━━━━━━━━━━━━`
                 )
 
@@ -123,9 +123,10 @@ ${robuxText}
 
                 try {
 
-                    const msg = await channel.messages.fetch(
-                        database.events.leaderboardMessage
-                    );
+                    const msg =
+                        await channel.messages.fetch(
+                            database.events.leaderboardMessage
+                        );
 
                     await msg.edit({
                         embeds: [embed]
