@@ -100,6 +100,12 @@ class Leaderboard {
 
 ${robuxText}
 
+━━━━━━━━━━━━━━━━━━━━
+
+💎 **TOTAL SEMUA ROBUX**
+# **${totalRobux} ⏣**
+
+━━━━━━━━━━━━━━━━━━━━`
 ━━━━━━━━━━━━━━━━━━━━`
                 )
 
