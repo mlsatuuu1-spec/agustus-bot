@@ -61,15 +61,19 @@ class Leaderboard {
             // ======================
 
             let robuxText = "";
+            let totalRobux = 0;
 
             allUsers
-                .filter(user => (user.robux || 0) > 0)
-                .forEach(user => {
+    .filter(user => (user.robux || 0) > 0)
+    .forEach(user => {
 
-                    robuxText +=
+        robuxText +=
 `${user.username} — 💎 ${user.robux} ⏣\n`;
 
-                });
+        totalRobux +=
+            user.robux || 0;
+
+    });
 
             if (!robuxText) {
 
