@@ -31,10 +31,60 @@ class Panjat {
         this.message = null;
 
         // ======================
-        // TIMER REWARD
+        // SCHEDULER
         // ======================
 
-        this.rewardInterval = null;
+        this.scheduler = null;
+
+        // ======================
+        // JAM REWARD TERAKHIR
+        // ======================
+
+        this.lastRewardKey = "";
+
+    }
+
+
+    // ==================================================
+    // WIB
+    // ==================================================
+
+    getWIB() {
+
+        const now = new Date();
+
+        return new Date(
+            now.toLocaleString(
+                "en-US",
+                {
+                    timeZone: "Asia/Jakarta"
+                }
+            )
+        );
+
+    }
+
+
+    // ==================================================
+    // KEY JAM REWARD
+    // ==================================================
+
+    getRewardKey() {
+
+        const wib = this.getWIB();
+
+        return (
+            `${wib.getFullYear()}-` +
+            `${String(
+                wib.getMonth() + 1
+            ).padStart(2, "0")}-` +
+            `${String(
+                wib.getDate()
+            ).padStart(2, "0")}-` +
+            `${String(
+                wib.getHours()
+            ).padStart(2, "0")}`
+        );
 
     }
 
@@ -46,8 +96,11 @@ class Panjat {
     loadData() {
 
         if (!database.events) {
+
             database.events = {};
+
         }
+
 
         if (!database.events.paskibraka) {
 
@@ -58,9 +111,7 @@ class Panjat {
                     null,
                     null,
                     null
-                ],
-
-                lastReward: Date.now()
+                ]
 
             };
 
@@ -68,22 +119,27 @@ class Panjat {
 
         }
 
+
         this.slots =
             database.events.paskibraka.slots || [
+
                 null,
                 null,
                 null,
                 null
+
             ];
 
+
+        // ======================
+        // PESAN PANEL
+        // ======================
+
         if (
-            !database.events.paskibraka.lastReward
+            database.events.paskibrakaMessage
         ) {
 
-            database.events.paskibraka.lastReward =
-                Date.now();
-
-            database.saveEvents();
+            this.message = null;
 
         }
 
@@ -96,14 +152,19 @@ class Panjat {
 
     saveData() {
 
+        if (!database.events) {
+
+            database.events = {};
+
+        }
+
+
         database.events.paskibraka = {
 
-            slots: this.slots,
-
-            lastReward:
-                database.events.paskibraka.lastReward
+            slots: this.slots
 
         };
+
 
         database.saveEvents();
 
@@ -125,7 +186,9 @@ class Panjat {
 
         ];
 
+
         let text = "";
+
 
         this.slots.forEach(
             (slot, index) => {
@@ -162,28 +225,31 @@ class Panjat {
 
             .setDescription(
 
-`🎖️ **PEREBUTAN 4 POSISI PASKIBRAKA**
+`🎖️ **REBUTAN 4 POSISI PASKIBRAKA**
 
-Siapa yang mampu bertahan paling lama?
+Siapa yang berhasil bertahan?
 
 ━━━━━━━━━━━━━━━━━━━━
 
 ${text}
 ━━━━━━━━━━━━━━━━━━━━
 
-💰 **REWARD**
+💰 **REWARD OTOMATIS**
 
-⏰ Setiap **1 jam**
-🎁 **+10 Poin**
+⏰ Setiap jam tepat
+**00:00 • 01:00 • 02:00 • dst.**
+
+🎁 Pemegang posisi mendapatkan:
+**+10 Poin**
 
 ━━━━━━━━━━━━━━━━━━━━
 
 ⚔️ **SISTEM REBUTAN**
 
 • Posisi bisa direbut kapan saja.
-• Tidak perlu persetujuan pemilik.
-• Jika direbut, pemilik lama langsung keluar.
-• Satu orang hanya boleh memiliki 1 posisi.
+• Tidak perlu persetujuan.
+• Jika direbut, pemilik lama keluar.
+• Satu orang hanya bisa memegang 1 posisi.
 
 🔥 **PERTAHANKAN POSISIMU!**`
 
@@ -322,6 +388,7 @@ ${text}
                     this.message =
                         oldMessage;
 
+
                     return;
 
                 } catch (err) {
@@ -352,11 +419,13 @@ ${text}
                 });
 
 
-            this.message = msg;
+            this.message =
+                msg;
 
 
             database.events.paskibrakaMessage =
                 msg.id;
+
 
             database.saveEvents();
 
@@ -368,7 +437,7 @@ ${text}
         } catch (err) {
 
             console.error(
-                "❌ Gagal membuat panel Paskibraka:",
+                "❌ Gagal update panel Paskibraka:",
                 err
             );
 
@@ -417,12 +486,13 @@ ${text}
         const userId =
             interaction.user.id;
 
+
         const username =
             interaction.user.username;
 
 
         // ==================================================
-        // CEK SLOT YANG SUDAH DIMILIKI
+        // CEK POSISI YANG SUDAH DIMILIKI
         // ==================================================
 
         const currentSlot =
@@ -434,7 +504,7 @@ ${text}
 
 
         // ==================================================
-        // SUDAH DI SLOT YANG SAMA
+        // SUDAH DI POSISI TERSEBUT
         // ==================================================
 
         if (
@@ -444,7 +514,7 @@ ${text}
             return interaction.reply({
 
                 content:
-                    `🇮🇩 Kamu sudah berada di **Paskibraka ${slotIndex + 1}**!`,
+                    `🇮🇩 Kamu sudah menempati **Paskibraka ${slotIndex + 1}**!`,
 
                 ephemeral: true
 
@@ -454,7 +524,7 @@ ${text}
 
 
         // ==================================================
-        // PINDAH / REBUT SLOT
+        // PEMILIK LAMA
         // ==================================================
 
         const oldOwner =
@@ -462,7 +532,7 @@ ${text}
 
 
         // ==================================================
-        // KELUARKAN DARI SLOT LAMA
+        // KELUARKAN DARI POSISI LAMA
         // ==================================================
 
         if (
@@ -476,7 +546,7 @@ ${text}
 
 
         // ==================================================
-        // PASANG PEMILIK BARU
+        // REBUT / AMBIL POSISI
         // ==================================================
 
         this.slots[slotIndex] = {
@@ -492,7 +562,7 @@ ${text}
 
 
         // ==================================================
-        // BALAS USER
+        // BALAS
         // ==================================================
 
         if (oldOwner) {
@@ -505,7 +575,7 @@ ${text}
 🇮🇩 Kamu merebut **Paskibraka ${slotIndex + 1}**
 dari **${oldOwner.username}**!
 
-💰 Bertahan sampai reward berikutnya:
+💰 Jika masih memegang posisi saat jam berikutnya:
 **+10 Poin**`,
 
                 ephemeral: true
@@ -517,12 +587,12 @@ dari **${oldOwner.username}**!
             await interaction.reply({
 
                 content:
-`🇮🇩 **SELAMAT!**
+`🇮🇩 **POSISI BERHASIL DIAMBIL!**
 
-Kamu sekarang menjadi
+Kamu sekarang menempati
 **Paskibraka ${slotIndex + 1}**!
 
-💰 Bertahan sampai reward berikutnya:
+💰 Jika masih memegang posisi saat jam berikutnya:
 **+10 Poin**`,
 
                 ephemeral: true
@@ -553,7 +623,7 @@ Kamu sekarang menjadi
 
 
     // ==================================================
-    // LOG PASKIBRAKA
+    // LOG
     // ==================================================
 
     async sendLog(
@@ -586,7 +656,7 @@ Kamu sekarang menjadi
 
                 description =
 
-`⚔️ **${username}** berhasil merebut posisi Paskibraka!
+`⚔️ **${username}** berhasil merebut posisi!
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -600,13 +670,13 @@ Paskibraka ${slotIndex + 1}
 ${oldOwner.username}
 
 💰 **Reward**
-+10 poin / jam`;
++10 poin setiap jam`;
 
             } else {
 
                 description =
 
-`🇮🇩 **${username}** bergabung menjadi Paskibraka!
+`🇮🇩 **${username}** berhasil menempati posisi Paskibraka!
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -617,7 +687,7 @@ ${username}
 Paskibraka ${slotIndex + 1}
 
 💰 **Reward**
-+10 poin / jam`;
++10 poin setiap jam`;
 
             }
 
@@ -671,10 +741,39 @@ Paskibraka ${slotIndex + 1}
 
     async giveRewards() {
 
+        const rewardKey =
+            this.getRewardKey();
+
+
+        // ==================================================
+        // CEGAH REWARD DOBEL
+        // ==================================================
+
+        if (
+            this.lastRewardKey ===
+            rewardKey
+        ) {
+
+            return;
+
+        }
+
+
+        this.lastRewardKey =
+            rewardKey;
+
+
         console.log(
-            "🇮🇩 Membagikan reward Paskibraka..."
+            `🇮🇩 Reward Paskibraka ${rewardKey}`
         );
 
+
+        let rewarded = false;
+
+
+        // ==================================================
+        // BAGI +10 KE 4 PEMEGANG POSISI
+        // ==================================================
 
         for (
             let i = 0;
@@ -704,78 +803,90 @@ Paskibraka ${slotIndex + 1}
                     );
 
 
+                rewarded = true;
+
+
                 database.saveUsers();
 
 
                 console.log(
-                    `🇮🇩 ${slot.username} mendapat +10 poin.`
+                    `🇮🇩 ${slot.username} +10 Poin`
                 );
 
 
                 // ======================
-                // LOG REWARD
+                // LOG
                 // ======================
 
                 if (
                     process.env.LOG_CHANNEL
                 ) {
 
-                    const channel =
-                        await this.client.channels.fetch(
-                            process.env.LOG_CHANNEL
-                        );
+                    try {
+
+                        const channel =
+                            await this.client.channels.fetch(
+                                process.env.LOG_CHANNEL
+                            );
 
 
-                    const embed =
-                        new EmbedBuilder()
+                        const embed =
+                            new EmbedBuilder()
 
-                            .setColor("#2ECC71")
+                                .setColor("#2ECC71")
 
-                            .setTitle(
-                                "🎖️ REWARD PASKIBRAKA"
-                            )
+                                .setTitle(
+                                    "🎖️ REWARD PASKIBRAKA"
+                                )
 
-                            .setDescription(
+                                .setDescription(
 
-`🇮🇩 **${slot.username}** berhasil bertahan sebagai Paskibraka!
+`🇮🇩 **${slot.username}** menerima reward!
 
 ━━━━━━━━━━━━━━━━━━━━
 
 🥇 **Posisi**
 Paskibraka ${i + 1}
 
-💰 **Reward**
+💰 **Mendapatkan**
 **+10 Poin**
-
-⏰ **Masa Tugas**
-1 Jam
 
 🏆 **Total Poin**
 **${user.points} Poin**
 
-━━━━━━━━━━━━━━━━━━━━
+⏰ **Waktu**
+**${String(
+    this.getWIB().getHours()
+).padStart(2, "0")}:00 WIB**`
 
-🔥 Pertahankan posisimu!`
+                                )
 
-                            )
+                                .setFooter({
 
-                            .setFooter({
+                                    text:
+                                        "🇮🇩 Event Kemerdekaan 2026"
 
-                                text:
-                                    "🇮🇩 Event Kemerdekaan 2026"
+                                })
 
-                            })
-
-                            .setTimestamp();
+                                .setTimestamp();
 
 
-                    await channel.send({
+                        await channel.send({
 
-                        embeds: [
-                            embed
-                        ]
+                            embeds: [
+                                embed
+                            ]
 
-                    });
+                        });
+
+                    } catch (logError) {
+
+                        console.error(
+                            "❌ Gagal mengirim log reward:",
+                            logError
+                        );
+
+                    }
 
                 }
 
@@ -791,14 +902,39 @@ Paskibraka ${i + 1}
         }
 
 
+        database.saveUsers();
+
+
         // ==================================================
-        // SIMPAN WAKTU REWARD
+        // UPDATE LEADERBOARD
         // ==================================================
 
-        database.events.paskibraka.lastReward =
-            Date.now();
+        if (rewarded) {
 
-        database.saveEvents();
+            try {
+
+                const Leaderboard =
+                    require("./leaderboard");
+
+
+                const leaderboard =
+                    new Leaderboard(
+                        this.client
+                    );
+
+
+                await leaderboard.update();
+
+            } catch (err) {
+
+                console.error(
+                    "❌ Gagal update leaderboard:",
+                    err
+                );
+
+            }
+
+        }
 
 
         // ==================================================
@@ -806,6 +942,93 @@ Paskibraka ${i + 1}
         // ==================================================
 
         await this.updatePanel();
+
+    }
+
+
+    // ==================================================
+    // SCHEDULER
+    // ==================================================
+
+    startScheduler() {
+
+        // ======================
+        // CEGAH TIMER DOBEL
+        // ======================
+
+        if (
+            this.scheduler
+        ) {
+
+            clearInterval(
+                this.scheduler
+            );
+
+        }
+
+
+        // ======================
+        // CEK SETIAP 10 DETIK
+        // ======================
+
+        this.scheduler =
+            setInterval(
+
+                async () => {
+
+                    try {
+
+                        const wib =
+                            this.getWIB();
+
+
+                        const minute =
+                            wib.getMinutes();
+
+
+                        // ======================
+                        // HANYA SAAT MENIT 00
+                        // ======================
+
+                        if (
+                            minute !== 0
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        const rewardKey =
+                            this.getRewardKey();
+
+
+                        if (
+                            this.lastRewardKey ===
+                            rewardKey
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        await this.giveRewards();
+
+                    } catch (err) {
+
+                        console.error(
+                            "❌ Paskibraka scheduler error:",
+                            err
+                        );
+
+                    }
+
+                },
+
+                10 * 1000
+
+            );
 
     }
 
@@ -836,73 +1059,14 @@ Paskibraka ${i + 1}
 
 
         // ======================
-        // HENTIKAN TIMER LAMA
+        // SCHEDULER
         // ======================
 
-        if (
-            this.rewardInterval
-        ) {
-
-            clearInterval(
-                this.rewardInterval
-            );
-
-        }
-
-
-        // ======================
-        // CEK REWARD SETIAP MENIT
-        // ======================
-
-        this.rewardInterval =
-            setInterval(
-
-                async () => {
-
-                    try {
-
-                        const lastReward =
-                            database.events
-                                .paskibraka
-                                .lastReward || Date.now();
-
-
-                        const elapsed =
-                            Date.now() -
-                            lastReward;
-
-
-                        // ======================
-                        // SUDAH 1 JAM
-                        // ======================
-
-                        if (
-                            elapsed >=
-                            60 * 60 * 1000
-                        ) {
-
-                            await this.giveRewards();
-
-                        }
-
-                    } catch (err) {
-
-                        console.error(
-                            "❌ Paskibraka timer error:",
-                            err
-                        );
-
-                    }
-
-                },
-
-                60 * 1000
-
-            );
+        this.startScheduler();
 
 
         console.log(
-            "⏰ Paskibraka reward: +10 poin setiap 1 jam."
+            "⏰ Paskibraka aktif: reward +10 setiap jam tepat WIB."
         );
 
     }
