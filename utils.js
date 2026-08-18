@@ -17,7 +17,8 @@ function random(min, max) {
 
 function format(num) {
 
-    return new Intl.NumberFormat("id-ID").format(num);
+    return new Intl.NumberFormat("id-ID")
+        .format(num);
 
 }
 
@@ -29,14 +30,14 @@ function format(num) {
 const rewards = [
 
     // ======================
-    // 🟢 POSITIF — 55%
-    // ======================
+    // 🟢 POSITIF — 60%
+// ======================
 
     {
         emoji: "🇮🇩",
         item: "Bendera Merah Putih",
-        point: 5,
-        chance: 12,
+        point: 12,
+        chance: 15,
         text:
             "🇮🇩 Kamu berhasil menangkap Garuda!"
     },
@@ -44,49 +45,49 @@ const rewards = [
     {
         emoji: "🎖️",
         item: "Medali Kemerdekaan",
-        point: 4,
+        point: 15,
         chance: 15,
         text:
-            "🎖️ Garuda menghadiahimu medali."
+            "🎖️ Garuda menghadiahimu Medali Kemerdekaan!"
     },
 
     {
         emoji: "🍜",
         item: "Mie Ayam",
-        point: 2,
-        chance: 15,
+        point: 11,
+        chance: 12,
         text:
-            "🍜 Kamu mendapat mie ayam."
+            "🍜 Kamu mendapat mie ayam!"
     },
 
     {
         emoji: "🥭",
         item: "Mangga",
-        point: 2,
-        chance: 8,
+        point: 13,
+        chance: 10,
         text:
-            "🥭 Garuda menjatuhkan mangga."
+            "🥭 Garuda menjatuhkan mangga!"
     },
 
     {
         emoji: "🩴",
         item: "Sandal Jepit",
-        point: 2,
-        chance: 5,
+        point: 14,
+        chance: 8,
         text:
             "🩴 Lumayan! Kamu mendapat sandal."
     },
 
 
     // ======================
-    // 🔴 MINUS — 44%
+    // 🔴 MINUS — 38%
     // ======================
 
     {
         emoji: "💩",
         item: "Tai Ayam",
         point: -4,
-        chance: 15,
+        chance: 12,
         text:
             "💩 Astaga... Garuda malah menjatuhkan tai ayam."
     },
@@ -94,17 +95,17 @@ const rewards = [
     {
         emoji: "👹",
         item: "Bu Juleha",
-        point: -4,
-        chance: 10,
+        point: -5,
+        chance: 8,
         text:
-            "👹 sial... Garuda malah kirim cocotan bu juleha."
+            "👹 Sial... Garuda malah kirim cocotan Bu Juleha."
     },
 
     {
         emoji: "🦟",
         item: "Nyamuk",
         point: -3,
-        chance: 8,
+        chance: 7,
         text:
             "🦟 Kamu malah digigit nyamuk."
     },
@@ -112,7 +113,7 @@ const rewards = [
     {
         emoji: "🐄",
         item: "Tai Kebo",
-        point: -12,
+        point: -10,
         chance: 6,
         text:
             "🐄 Waduh! Kamu kena tai kebo."
@@ -129,14 +130,14 @@ const rewards = [
 
 
     // ======================
-    // 💎 JACKPOT — 1%
-    // ======================
+    // 💎 JACKPOT — 2%
+// ======================
 
     {
         emoji: "👑",
         item: "Mahkota Garuda",
         point: 20,
-        chance: 0.5,
+        chance: 0.8,
         text:
             "👑 JACKPOT!! Kamu mendapatkan Mahkota Garuda!"
     },
@@ -144,8 +145,8 @@ const rewards = [
     {
         emoji: "💰",
         item: "Karung Robux",
-        point: 15,
-        chance: 0.3,
+        point: 30,
+        chance: 0.7,
         text:
             "💰 JACKPOT!! Garuda menjatuhkan Karung Robux!"
     },
@@ -154,7 +155,7 @@ const rewards = [
         emoji: "🚗",
         item: "Avanza",
         point: 50,
-        chance: 0.2,
+        chance: 0.5,
         text:
             "🚗 JACKPOT!! Garuda menjatuhkan Avanza!"
     }
@@ -178,13 +179,9 @@ function randomReward() {
     let roll =
         Math.random() * total;
 
-    for (
-        const reward of rewards
-    ) {
+    for (const reward of rewards) {
 
-        if (
-            roll < reward.chance
-        ) {
+        if (roll < reward.chance) {
 
             return {
                 ...reward
@@ -210,19 +207,12 @@ function randomReward() {
 const monuments = [
 
     "Monas",
-
     "Borobudur",
-
     "Prambanan",
-
     "Suramadu",
-
     "Jam Gadang",
-
     "Simpang Lima Gumul",
-
     "Tugu Pahlawan",
-
     "Istana Merdeka"
 
 ];
@@ -235,11 +225,8 @@ const monuments = [
 module.exports = {
 
     random,
-
     format,
-
     randomReward,
-
     monuments
 
 };
