@@ -7,221 +7,192 @@ const {
 
 const database = require("./database");
 
-class PanjatPinang {
+class Panjat {
 
     constructor(client) {
 
         this.client = client;
 
-        // ==================================================
-        // STATUS GAME
-        // ==================================================
+        // ======================
+        // 4 SLOT PASKIBRAKA
+        // ======================
 
-        this.active = false;
+        this.slots = [
+            null,
+            null,
+            null,
+            null
+        ];
 
-        // ==================================================
-        // STATUS PENDAFTARAN
-        // ==================================================
-
-        this.registering = false;
-
-        // ==================================================
-        // DATA TEAM
-        // ==================================================
-
-        this.teams = {
-
-            merah: [],
-
-            biru: []
-
-        };
-
-        // ==================================================
-        // PROGRES TEAM
-        // ==================================================
-
-        this.progress = {
-
-            merah: 0,
-
-            biru: 0
-
-        };
-
-        // ==================================================
-        // MESSAGE UTAMA
-        // ==================================================
+        // ======================
+        // PESAN PANEL
+        // ======================
 
         this.message = null;
 
-        // ==================================================
-        // TIMER
-        // ==================================================
+        // ======================
+        // TIMER REWARD
+        // ======================
 
-        this.registrationTimer = null;
-
-        // ==================================================
-        // COOLDOWN
-        // ==================================================
-
-        this.cooldown = new Map();
-
-        // ==================================================
-        // CHANNEL MESSAGE
-        // ==================================================
-
-        this.resultMessage = null;
+        this.rewardInterval = null;
 
     }
 
+
     // ==================================================
-    // EMBED PANEL UTAMA
+    // LOAD DATA
     // ==================================================
 
-    buildPanelEmbed() {
+    loadData() {
 
-        return new EmbedBuilder()
+        if (!database.events) {
+            database.events = {};
+        }
 
-            .setColor("#E74C3C")
+        if (!database.events.paskibraka) {
 
-            .setTitle(
-                "🇮🇩 🏗️ PANJAT PINANG"
-            )
+            database.events.paskibraka = {
 
-            .setDescription(
+                slots: [
+                    null,
+                    null,
+                    null,
+                    null
+                ],
 
-`🎉 **LOMBA PANJAT PINANG DIMULAI!**
+                lastReward: Date.now()
 
-Bentuk timmu dan jadilah yang
-pertama mencapai puncak!
+            };
 
-━━━━━━━━━━━━━━━━━━━━
+            database.saveEvents();
 
-🔴 **TIM MERAH**
-Berlomba mencapai puncak.
+        }
 
-🔵 **TIM BIRU**
-Berlomba mencapai puncak.
+        this.slots =
+            database.events.paskibraka.slots || [
+                null,
+                null,
+                null,
+                null
+            ];
 
-━━━━━━━━━━━━━━━━━━━━
+        if (
+            !database.events.paskibraka.lastReward
+        ) {
 
-👥 Pilih timmu sendiri.
+            database.events.paskibraka.lastReward =
+                Date.now();
 
-⚖️ Jumlah anggota akan dijaga
-agar tetap seimbang.
+            database.saveEvents();
 
-⏱️ Pendaftaran berlangsung
-selama **60 detik**.
-
-🏆 Tim pemenang:
-**+5 Poin / anggota**
-
-💀 Tim kalah:
-**-5 Poin / anggota**
-
-━━━━━━━━━━━━━━━━━━━━
-
-🇮🇩 **SIAP PANJAT PINANG?**`
-
-            )
-
-            .setFooter({
-
-                text:
-                    "🇮🇩 Event Kemerdekaan 2026"
-
-            })
-
-            .setTimestamp();
+        }
 
     }
 
+
     // ==================================================
-    // EMBED PENDAFTARAN
+    // SAVE DATA
     // ==================================================
 
-    buildRegistrationEmbed() {
+    saveData() {
 
-        const merah =
-            this.teams.merah.length;
+        database.events.paskibraka = {
 
-        const biru =
-            this.teams.biru.length;
+            slots: this.slots,
 
-        let merahText =
-            this.teams.merah.length
-                ? this.teams.merah
-                    .map(
-                        id => `<@${id}>`
-                    )
-                    .join("\n")
-                : "Belum ada anggota.";
+            lastReward:
+                database.events.paskibraka.lastReward
 
-        let biruText =
-            this.teams.biru.length
-                ? this.teams.biru
-                    .map(
-                        id => `<@${id}>`
-                    )
-                    .join("\n")
-                : "Belum ada anggota.";
+        };
 
-        return new EmbedBuilder()
+        database.saveEvents();
 
-            .setColor("#F1C40F")
+    }
 
-            .setTitle(
-                "🏗️ PENDAFTARAN PANJAT PINANG"
-            )
 
-            .setDescription(
+    // ==================================================
+    // BUILD EMBED
+    // ==================================================
 
-`🇮🇩 **PILIH TIMMU!**
+    buildEmbed() {
 
-Klik tombol di bawah untuk
-bergabung ke salah satu tim.
+        const names = [
 
-⚠️ Setelah memilih tim,
-kamu **tidak bisa pindah**.
+            "🥇 **PASKIBRAKA 1**",
+            "🥈 **PASKIBRAKA 2**",
+            "🥉 **PASKIBRAKA 3**",
+            "🏅 **PASKIBRAKA 4**"
 
-⏱️ Pendaftaran ditutup dalam
-**60 detik**.`
+        ];
 
-            )
+        let text = "";
 
-            .addFields(
+        this.slots.forEach(
+            (slot, index) => {
 
-                {
+                if (slot) {
 
-                    name:
-                        `🔴 TIM MERAH — ${merah} orang`,
+                    text +=
+`${names[index]}
+👤 **${slot.username}**
 
-                    value:
-                        merahText,
+`;
 
-                    inline: true
+                } else {
 
-                },
+                    text +=
+`${names[index]}
+🟢 **KOSONG**
 
-                {
-
-                    name:
-                        `🔵 TIM BIRU — ${biru} orang`,
-
-                    value:
-                        biruText,
-
-                    inline: true
+`;
 
                 }
 
+            }
+        );
+
+
+        return new EmbedBuilder()
+
+            .setColor("#D90429")
+
+            .setTitle(
+                "🇮🇩 PASKIBRAKA KEMERDEKAAN 2026"
+            )
+
+            .setDescription(
+
+`🎖️ **PEREBUTAN 4 POSISI PASKIBRAKA**
+
+Siapa yang mampu bertahan paling lama?
+
+━━━━━━━━━━━━━━━━━━━━
+
+${text}
+━━━━━━━━━━━━━━━━━━━━
+
+💰 **REWARD**
+
+⏰ Setiap **1 jam**
+🎁 **+10 Poin**
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚔️ **SISTEM REBUTAN**
+
+• Posisi bisa direbut kapan saja.
+• Tidak perlu persetujuan pemilik.
+• Jika direbut, pemilik lama langsung keluar.
+• Satu orang hanya boleh memiliki 1 posisi.
+
+🔥 **PERTAHANKAN POSISIMU!**`
+
             )
 
             .setFooter({
 
                 text:
-                    "⚖️ Tim akan dijaga tetap seimbang"
+                    "🇮🇩 Event Kemerdekaan 2026 • Paskibraka"
 
             })
 
@@ -229,185 +200,74 @@ kamu **tidak bisa pindah**.
 
     }
 
+
     // ==================================================
-    // BUTTON PENDAFTARAN
+    // BUTTON
     // ==================================================
 
-    buildRegistrationButtons() {
+    buildButtons() {
 
-        return new ActionRowBuilder()
+        const row1 =
+            new ActionRowBuilder();
 
-            .addComponents(
+        const row2 =
+            new ActionRowBuilder();
 
+
+        for (
+            let i = 0;
+            i < 4;
+            i++
+        ) {
+
+            const button =
                 new ButtonBuilder()
 
                     .setCustomId(
-                        "panjat_merah"
+                        `paskibraka_${i}`
                     )
 
-                    .setEmoji("🔴")
+                    .setEmoji("🇮🇩")
 
                     .setLabel(
-                        "Gabung Tim Merah"
+                        `Posisi ${i + 1}`
                     )
 
                     .setStyle(
                         ButtonStyle.Danger
-                    ),
+                    );
 
-                new ButtonBuilder()
 
-                    .setCustomId(
-                        "panjat_biru"
-                    )
+            if (i < 2) {
 
-                    .setEmoji("🔵")
+                row1.addComponents(
+                    button
+                );
 
-                    .setLabel(
-                        "Gabung Tim Biru"
-                    )
+            } else {
 
-                    .setStyle(
-                        ButtonStyle.Primary
-                    )
+                row2.addComponents(
+                    button
+                );
 
-            );
+            }
 
-    }
+        }
 
-    // ==================================================
-    // BUTTON PANJAT
-    // ==================================================
 
-    buildGameButtons() {
-
-        return new ActionRowBuilder()
-
-            .addComponents(
-
-                new ButtonBuilder()
-
-                    .setCustomId(
-                        "panjat_action"
-                    )
-
-                    .setEmoji("🧗")
-                    .setLabel(
-                        "PANJAT!"
-                    )
-
-                    .setStyle(
-                        ButtonStyle.Success
-                    )
-
-            );
+        return [
+            row1,
+            row2
+        ];
 
     }
 
-    // ==================================================
-    // EMBED PERTANDINGAN
-    // ==================================================
-
-    buildGameEmbed() {
-
-        const merah =
-            Math.min(
-                100,
-                this.progress.merah
-            );
-
-        const biru =
-            Math.min(
-                100,
-                this.progress.biru
-            );
-
-        return new EmbedBuilder()
-
-            .setColor("#F1C40F")
-
-            .setTitle(
-                "🏗️ PANJAT PINANG DIMULAI!"
-            )
-
-            .setDescription(
-
-`🇮🇩 **REBUT PUNCAK!**
-
-Tim pertama yang mencapai **100%**
-akan menjadi pemenang!
-
-━━━━━━━━━━━━━━━━━━━━
-
-🔴 **TIM MERAH**
-
-${this.progressBar(merah)}
-**${merah}%**
-
-👥 ${this.teams.merah.length} anggota
-
-━━━━━━━━━━━━━━━━━━━━
-
-🔵 **TIM BIRU**
-
-${this.progressBar(biru)}
-**${biru}%**
-
-👥 ${this.teams.biru.length} anggota
-
-━━━━━━━━━━━━━━━━━━━━
-
-🧗 Tekan tombol **PANJAT!**
-untuk membantu timmu naik.
-
-⚡ Setiap panjatan memberikan
-progres secara random.`
-
-            )
-
-            .setFooter({
-
-                text:
-                    "🇮🇩 Siapa cepat, dia sampai puncak!"
-
-            })
-
-            .setTimestamp();
-
-    }
 
     // ==================================================
-    // PROGRESS BAR
+    // UPDATE PANEL
     // ==================================================
 
-    progressBar(value) {
-
-        const total = 10;
-
-        const filled =
-            Math.round(
-                (value / 100) * total
-            );
-
-        const empty =
-            total - filled;
-
-        return (
-            "🟩".repeat(filled) +
-            "⬜".repeat(empty)
-        );
-
-    }
-
-    // ==================================================
-    // START
-    // ==================================================
-
-    async start() {
-
-        console.log(
-            "🏗️ Panjat Pinang Module Loaded"
-        );
+    async updatePanel() {
 
         if (
             !process.env.PANJAT_CHANNEL
@@ -421,6 +281,7 @@ progres secara random.`
 
         }
 
+
         try {
 
             const channel =
@@ -428,76 +289,93 @@ progres secara random.`
                     process.env.PANJAT_CHANNEL
                 );
 
-            // ==================================================
-            // HAPUS PANEL LAMA
-            // ==================================================
+
+            // ======================
+            // UPDATE PESAN LAMA
+            // ======================
 
             if (
-                this.message
+                database.events &&
+                database.events.paskibrakaMessage
             ) {
 
                 try {
 
-                    await this.message.delete();
+                    const oldMessage =
+                        await channel.messages.fetch(
+                            database.events.paskibrakaMessage
+                        );
 
-                } catch (err) {}
+
+                    await oldMessage.edit({
+
+                        embeds: [
+                            this.buildEmbed()
+                        ],
+
+                        components:
+                            this.buildButtons()
+
+                    });
+
+
+                    this.message =
+                        oldMessage;
+
+                    return;
+
+                } catch (err) {
+
+                    console.log(
+                        "⚠️ Panel Paskibraka lama tidak ditemukan."
+                    );
+
+                }
 
             }
 
-            // ==================================================
-            // KIRIM PANEL
-            // ==================================================
 
-            this.message =
+            // ======================
+            // BUAT PANEL BARU
+            // ======================
+
+            const msg =
                 await channel.send({
 
                     embeds: [
-
-                        this.buildPanelEmbed()
-
+                        this.buildEmbed()
                     ],
 
-                    components: [
-
-                        new ActionRowBuilder()
-                            .addComponents(
-
-                                new ButtonBuilder()
-
-                                    .setCustomId(
-                                        "panjat_start"
-                                    )
-
-                                    .setEmoji("🏗️")
-
-                                    .setLabel(
-                                        "Mulai Panjat Pinang"
-                                    )
-
-                                    .setStyle(
-                                        ButtonStyle.Success
-                                    )
-
-                            )
-
-                    ]
+                    components:
+                        this.buildButtons()
 
                 });
 
+
+            this.message = msg;
+
+
+            database.events.paskibrakaMessage =
+                msg.id;
+
+            database.saveEvents();
+
+
             console.log(
-                "🏗️ Panel Panjat Pinang aktif."
+                "🇮🇩 Panel Paskibraka dibuat."
             );
 
         } catch (err) {
 
             console.error(
-                "❌ Gagal membuat panel Panjat Pinang:",
+                "❌ Gagal membuat panel Paskibraka:",
                 err
             );
 
         }
 
     }
+
 
     // ==================================================
     // HANDLE BUTTON
@@ -505,1062 +383,272 @@ progres secara random.`
 
     async handle(interaction) {
 
-        if (
-            !interaction.isButton()
-        )
+        if (!interaction.isButton())
             return;
 
-        // ==================================================
-        // MULAI GAME
-        // ==================================================
 
         if (
-            interaction.customId ===
-            "panjat_start"
+            !interaction.customId.startsWith(
+                "paskibraka_"
+            )
         ) {
-
-            await this.startGame(
-                interaction
-            );
 
             return;
 
         }
 
-        // ==================================================
-        // GABUNG MERAH
-        // ==================================================
+
+        const slotIndex =
+            Number(
+                interaction.customId.split("_")[1]
+            );
+
 
         if (
-            interaction.customId ===
-            "panjat_merah"
+            slotIndex < 0 ||
+            slotIndex > 3
         ) {
-
-            await this.joinTeam(
-                interaction,
-                "merah"
-            );
 
             return;
 
         }
 
-        // ==================================================
-        // GABUNG BIRU
-        // ==================================================
-
-        if (
-            interaction.customId ===
-            "panjat_biru"
-        ) {
-
-            await this.joinTeam(
-                interaction,
-                "biru"
-            );
-
-            return;
-
-        }
-
-        // ==================================================
-        // PANJAT
-        // ==================================================
-
-        if (
-            interaction.customId ===
-            "panjat_action"
-        ) {
-
-            await this.climb(
-                interaction
-            );
-
-            return;
-
-        }
-
-    }
-
-        // ==================================================
-    // MULAI PENDAFTARAN
-    // ==================================================
-
-    async startGame(interaction) {
-
-        // ==================================================
-        // CEK GAME SEDANG BERJALAN
-        // ==================================================
-
-        if (
-            this.active ||
-            this.registering
-        ) {
-
-            return interaction.reply({
-
-                content:
-                    "🏗️ Saat ini sudah ada Panjat Pinang yang sedang berlangsung!",
-
-                ephemeral: true
-
-            });
-
-        }
-
-        // ==================================================
-        // RESET DATA
-        // ==================================================
-
-        this.teams.merah = [];
-
-        this.teams.biru = [];
-
-        this.progress.merah = 0;
-
-        this.progress.biru = 0;
-
-        // ==================================================
-        // MULAI PENDAFTARAN
-        // ==================================================
-
-        this.registering = true;
-
-        // ==================================================
-        // BALAS PEMAIN
-        // ==================================================
-
-        await interaction.reply({
-
-            content:
-                "🏗️ **Pendaftaran Panjat Pinang dibuka!**",
-
-            ephemeral: true
-
-        });
-
-        // ==================================================
-        // CHANNEL
-        // ==================================================
-
-        const channel =
-            interaction.channel;
-
-        // ==================================================
-        // KIRIM PANEL PENDAFTARAN
-        // ==================================================
-
-        this.message =
-            await channel.send({
-
-                content:
-                    "🇮🇩 **PENDAFTARAN PANJAT PINANG DIBUKA!**",
-
-                embeds: [
-
-                    this.buildRegistrationEmbed()
-
-                ],
-
-                components: [
-
-                    this.buildRegistrationButtons()
-
-                ]
-
-            });
-
-        // ==================================================
-        // TIMER 60 DETIK
-        // ==================================================
-
-        clearTimeout(
-            this.registrationTimer
-        );
-
-        this.registrationTimer =
-            setTimeout(
-
-                async () => {
-
-                    await this.startBattle();
-
-                },
-
-                60000
-
-            );
-
-    }
-
-    // ==================================================
-    // GABUNG TEAM
-    // ==================================================
-
-    async joinTeam(
-        interaction,
-        team
-    ) {
-
-        // ==================================================
-        // CEK PENDAFTARAN
-        // ==================================================
-
-        if (
-            !this.registering
-        ) {
-
-            return interaction.reply({
-
-                content:
-                    "❌ Pendaftaran sudah ditutup.",
-
-                ephemeral: true
-
-            });
-
-        }
-
-        // ==================================================
-        // CEK APAKAH SUDAH TERDAFTAR
-        // ==================================================
 
         const userId =
             interaction.user.id;
 
-        if (
-            this.teams.merah.includes(
-                userId
-            ) ||
-            this.teams.biru.includes(
-                userId
-            )
-        ) {
+        const username =
+            interaction.user.username;
 
-            return interaction.reply({
-
-                content:
-                    "❌ Kamu sudah memilih tim.",
-
-                ephemeral: true
-
-            });
-
-        }
 
         // ==================================================
-        // CEK COOLDOWN
+        // CEK SLOT YANG SUDAH DIMILIKI
         // ==================================================
 
-        const now =
-            Date.now();
-
-        const lastGame =
-            this.cooldown.get(
-                userId
-            ) || 0;
-
-        const cooldownTime =
-            10 * 60 * 1000;
-
-        if (
-            now - lastGame <
-            cooldownTime
-        ) {
-
-            const remaining =
-                lastGame +
-                cooldownTime -
-                now;
-
-            const minutes =
-                Math.ceil(
-                    remaining / 60000
-                );
-
-            return interaction.reply({
-
-                content:
-                    `⏳ Kamu masih cooldown!\n\n` +
-                    `🏗️ Bisa ikut Panjat Pinang lagi dalam **${minutes} menit**.`,
-
-                ephemeral: true
-
-            });
-
-        }
-
-        // ==================================================
-        // JAGA KESEIMBANGAN TEAM
-        // ==================================================
-
-        const merahCount =
-            this.teams.merah.length;
-
-        const biruCount =
-            this.teams.biru.length;
-
-        if (
-            team === "merah" &&
-            merahCount >
-            biruCount
-        ) {
-
-            return interaction.reply({
-
-                content:
-                    "⚖️ Tim Merah sudah lebih banyak. Silakan pilih Tim Biru.",
-
-                ephemeral: true
-
-            });
-
-        }
-
-        if (
-            team === "biru" &&
-            biruCount >
-            merahCount
-        ) {
-
-            return interaction.reply({
-
-                content:
-                    "⚖️ Tim Biru sudah lebih banyak. Silakan pilih Tim Merah.",
-
-                ephemeral: true
-
-            });
-
-        }
-
-        // ==================================================
-        // MASUK TEAM
-        // ==================================================
-
-        this.teams[team].push(
-            userId
-        );
-
-        // ==================================================
-        // BALAS
-        // ==================================================
-
-        await interaction.reply({
-
-            content:
-                `🇮🇩 Kamu bergabung ke **Tim ${team === "merah" ? "Merah 🔴" : "Biru 🔵"}**!`,
-
-            ephemeral: true
-
-        });
-
-        // ==================================================
-        // UPDATE EMBED PENDAFTARAN
-        // ==================================================
-
-        if (
-            this.message
-        ) {
-
-            try {
-
-                await this.message.edit({
-
-                    embeds: [
-
-                        this.buildRegistrationEmbed()
-
-                    ],
-
-                    components: [
-
-                        this.buildRegistrationButtons()
-
-                    ]
-
-                });
-
-            } catch (err) {
-
-                console.error(
-                    "❌ Gagal update pendaftaran:",
-                    err
-                );
-
-            }
-
-        }
-
-    }
-
-    // ==================================================
-    // MULAI PERTANDINGAN
-    // ==================================================
-
-    async startBattle() {
-
-        // ==================================================
-        // CEK STATUS
-        // ==================================================
-
-        if (
-            !this.registering
-        )
-            return;
-
-        this.registering = false;
-
-        // ==================================================
-        // CEK JUMLAH PEMAIN
-        // ==================================================
-
-        const totalPlayers =
-            this.teams.merah.length +
-            this.teams.biru.length;
-
-        // ==================================================
-        // MINIMAL 2 PEMAIN
-        // ==================================================
-
-        if (
-            totalPlayers < 2
-        ) {
-
-            this.active = false;
-
-            try {
-
-                await this.message.edit({
-
-                    content:
-                        "❌ **PANJAT PINANG DIBATALKAN**",
-
-                    embeds: [
-
-                        new EmbedBuilder()
-
-                            .setColor(
-                                "#E74C3C"
-                            )
-
-                            .setTitle(
-                                "🏗️ PANJAT PINANG DIBATALKAN"
-                            )
-
-                            .setDescription(
-
-`Tidak cukup peserta.
-
-👥 Minimal membutuhkan **2 pemain**.
-
-Silakan mulai pertandingan baru!`
-
-                            )
-
-                            .setTimestamp()
-
-                    ],
-
-                    components: []
-
-                });
-
-            } catch (err) {}
-
-            return;
-
-        }
-
-        // ==================================================
-        // RESET PROGRES
-        // ==================================================
-
-        this.progress.merah = 0;
-
-        this.progress.biru = 0;
-
-        this.active = true;
-
-        // ==================================================
-        // SET COOLDOWN SEMUA PEMAIN
-        // ==================================================
-
-        const cooldownTime =
-            10 * 60 * 1000;
-
-        const now =
-            Date.now();
-
-        this.teams.merah.forEach(
-            id => {
-
-                this.cooldown.set(
-                    id,
-                    now
-                );
-
-            }
-        );
-
-        this.teams.biru.forEach(
-            id => {
-
-                this.cooldown.set(
-                    id,
-                    now
-                );
-
-            }
-        );
-
-        // ==================================================
-        // UPDATE PESAN
-        // ==================================================
-
-        try {
-
-            await this.message.edit({
-
-                content:
-                    "🚨 **PANJAT PINANG DIMULAI!**",
-
-                embeds: [
-
-                    this.buildGameEmbed()
-
-                ],
-
-                components: [
-
-                    this.buildGameButtons()
-
-                ]
-
-            });
-
-        } catch (err) {
-
-            console.error(
-                "❌ Gagal memulai pertandingan:",
-                err
+        const currentSlot =
+            this.slots.findIndex(
+                slot =>
+                    slot &&
+                    slot.id === userId
             );
 
+
+        // ==================================================
+        // SUDAH DI SLOT YANG SAMA
+        // ==================================================
+
+        if (
+            currentSlot === slotIndex
+        ) {
+
+            return interaction.reply({
+
+                content:
+                    `🇮🇩 Kamu sudah berada di **Paskibraka ${slotIndex + 1}**!`,
+
+                ephemeral: true
+
+            });
+
         }
 
-        console.log(
-            `🏗️ Panjat Pinang dimulai: Merah ${this.teams.merah.length} vs Biru ${this.teams.biru.length}`
+
+        // ==================================================
+        // PINDAH / REBUT SLOT
+        // ==================================================
+
+        const oldOwner =
+            this.slots[slotIndex];
+
+
+        // ==================================================
+        // KELUARKAN DARI SLOT LAMA
+        // ==================================================
+
+        if (
+            currentSlot !== -1
+        ) {
+
+            this.slots[currentSlot] =
+                null;
+
+        }
+
+
+        // ==================================================
+        // PASANG PEMILIK BARU
+        // ==================================================
+
+        this.slots[slotIndex] = {
+
+            id: userId,
+
+            username: username
+
+        };
+
+
+        this.saveData();
+
+
+        // ==================================================
+        // BALAS USER
+        // ==================================================
+
+        if (oldOwner) {
+
+            await interaction.reply({
+
+                content:
+`⚔️ **POSISI BERHASIL DIREBUT!**
+
+🇮🇩 Kamu merebut **Paskibraka ${slotIndex + 1}**
+dari **${oldOwner.username}**!
+
+💰 Bertahan sampai reward berikutnya:
+**+10 Poin**`,
+
+                ephemeral: true
+
+            });
+
+        } else {
+
+            await interaction.reply({
+
+                content:
+`🇮🇩 **SELAMAT!**
+
+Kamu sekarang menjadi
+**Paskibraka ${slotIndex + 1}**!
+
+💰 Bertahan sampai reward berikutnya:
+**+10 Poin**`,
+
+                ephemeral: true
+
+            });
+
+        }
+
+
+        // ==================================================
+        // UPDATE PANEL
+        // ==================================================
+
+        await this.updatePanel();
+
+
+        // ==================================================
+        // LOG
+        // ==================================================
+
+        await this.sendLog(
+            username,
+            slotIndex,
+            oldOwner
         );
 
     }
 
-    // ==================================================
-    // AKSI PANJAT
-    // ==================================================
-
-    async climb(interaction) {
-
-        // ==================================================
-        // CEK GAME
-        // ==================================================
-
-        if (
-            !this.active
-        ) {
-
-            return interaction.reply({
-
-                content:
-                    "❌ Saat ini tidak ada Panjat Pinang yang berlangsung.",
-
-                ephemeral: true
-
-            });
-
-        }
-
-        // ==================================================
-        // CARI TEAM PEMAIN
-        // ==================================================
-
-        const userId =
-            interaction.user.id;
-
-        let team = null;
-
-        if (
-            this.teams.merah.includes(
-                userId
-            )
-        ) {
-
-            team = "merah";
-
-        }
-
-        else if (
-            this.teams.biru.includes(
-                userId
-            )
-        ) {
-
-            team = "biru";
-
-        }
-
-        // ==================================================
-        // BUKAN PESERTA
-        // ==================================================
-
-        if (!team) {
-
-            return interaction.reply({
-
-                content:
-                    "❌ Kamu tidak ikut pertandingan ini.",
-
-                ephemeral: true
-
-            });
-
-        }
-
-        // ==================================================
-        // RANDOM PROGRES
-        // ==================================================
-
-        const roll =
-            Math.random();
-
-        let progress = 0;
-
-        let resultText = "";
-
-        // ==================================================
-        // HASIL RANDOM
-        // ==================================================
-
-        if (
-            roll < 0.05
-        ) {
-
-            progress = -10;
-
-            resultText =
-                "💥 **Terpeleset!** -10%";
-
-        }
-
-        else if (
-            roll < 0.15
-        ) {
-
-            progress = -5;
-
-            resultText =
-                "🪵 **Pinangnya licin!** -5%";
-
-        }
-
-        else if (
-            roll < 0.25
-        ) {
-
-            progress = 15;
-
-            resultText =
-                "🔥 **Dorongan kuat!** +15%";
-
-        }
-
-        else if (
-            roll < 0.35
-        ) {
-
-            progress = 12;
-
-            resultText =
-                "💪 **Pijakan bagus!** +12%";
-
-        }
-
-        else {
-
-            progress =
-                Math.floor(
-                    Math.random() * 6
-                ) + 5;
-
-            resultText =
-                `🧗 **Berhasil memanjat!** +${progress}%`;
-
-        }
-
-        // ==================================================
-        // UPDATE PROGRES
-        // ==================================================
-
-        this.progress[team] +=
-            progress;
-
-        // ==================================================
-        // BATAS PROGRES
-        // ==================================================
-
-        if (
-            this.progress[team] < 0
-        ) {
-
-            this.progress[team] = 0;
-
-        }
-
-        if (
-            this.progress[team] > 100
-        ) {
-
-            this.progress[team] = 100;
-
-        }
-
-        // ==================================================
-        // CEK MENANG
-        // ==================================================
-
-        if (
-            this.progress[team] >= 100
-        ) {
-
-            await interaction.deferUpdate();
-
-            await this.finishGame(
-                team
-            );
-
-            return;
-
-        }
-
-        // ==================================================
-        // UPDATE EMBED
-        // ==================================================
-
-        try {
-
-            await interaction.update({
-
-                embeds: [
-
-                    this.buildGameEmbed()
-
-                ],
-
-                components: [
-
-                    this.buildGameButtons()
-
-                ]
-
-            });
-
-        } catch (err) {
-
-            console.error(
-                "❌ Gagal update Panjat Pinang:",
-                err
-            );
-
-        }
-
-        // ==================================================
-        // INFO HASIL KE PEMAIN
-        // ==================================================
-
-        
-
-    }
 
     // ==================================================
-    // SELESAIKAN GAME
+    // LOG PASKIBRAKA
     // ==================================================
 
-    async finishGame(
-        winningTeam
+    async sendLog(
+        username,
+        slotIndex,
+        oldOwner
     ) {
 
         if (
-            !this.active
-        )
+            !process.env.LOG_CHANNEL
+        ) {
+
             return;
 
-        // ==================================================
-        // NONAKTIFKAN GAME
-        // ==================================================
-
-        this.active = false;
-
-        // ==================================================
-        // TEAM KALAH
-        // ==================================================
-
-        const losingTeam =
-            winningTeam === "merah"
-                ? "biru"
-                : "merah";
-
-        // ==================================================
-        // HADIAH
-        // ==================================================
-
-        const WIN_REWARD = 5;
-
-        const LOSE_REWARD = 5;
-
-        // ==================================================
-        // PROSES TEAM PEMENANG
-        // ==================================================
-
-        for (
-            const userId of
-            this.teams[winningTeam]
-        ) {
-
-            const member =
-    await this.client.users.fetch(userId);
-
-const user =
-    database.getUser(
-        userId,
-        member.username
-    );
-
-database.addPoint(
-    userId,
-    member.username,
-    WIN_REWARD
-);
-
         }
 
-        // ==================================================
-        // PROSES TEAM KALAH
-        // ==================================================
-
-        for (
-            const userId of
-            this.teams[losingTeam]
-        ) {
-
-            const member =
-    await this.client.users.fetch(userId);
-
-const user =
-    database.getUser(
-        userId,
-        member.username
-    );
-
-database.removePoint(
-    userId,
-    member.username,
-    LOSE_REWARD
-);
-
-        }
-
-        // ==================================================
-        // SIMPAN DATABASE
-        // ==================================================
-
-        database.saveUsers();
-
-        // ==================================================
-        // UPDATE LEADERBOARD
-        // ==================================================
 
         try {
 
-            const Leaderboard =
-                require("./leaderboard");
-
-            await new Leaderboard(
-                this.client
-            ).update();
-
-        } catch (err) {
-
-            console.error(
-                "❌ Gagal update leaderboard:",
-                err
-            );
-
-        }
-
-        // ==================================================
-        // BUAT DAFTAR PEMENANG
-        // ==================================================
-
-        const winners =
-            this.teams[winningTeam]
-                .map(
-                    id => `<@${id}>`
-                )
-                .join("\n");
-
-        const losers =
-            this.teams[losingTeam]
-                .map(
-                    id => `<@${id}>`
-                )
-                .join("\n");
-
-        // ==================================================
-        // NAMA TEAM
-        // ==================================================
-
-        const winningName =
-            winningTeam === "merah"
-                ? "🔴 TIM MERAH"
-                : "🔵 TIM BIRU";
-
-        const losingName =
-            losingTeam === "merah"
-                ? "🔴 TIM MERAH"
-                : "🔵 TIM BIRU";
-
-        // ==================================================
-        // EMBED HASIL
-        // ==================================================
-
-        const resultEmbed =
-            new EmbedBuilder()
-
-                .setColor("#F1C40F")
-
-                .setTitle(
-                    "🏆 PANJAT PINANG SELESAI!"
-                )
-
-                .setDescription(
-
-`🇮🇩 **POHON PINANG BERHASIL DITAKLUKKAN!**
-
-━━━━━━━━━━━━━━━━━━━━
-
-🏆 **PEMENANG**
-
-${winningName}
-
-${winners}
-
-🎁 **+5 Poin / anggota**
-
-━━━━━━━━━━━━━━━━━━━━
-
-💀 **KALAH**
-
-${losingName}
-
-${losers}
-
-📉 **-5 Poin / anggota**
-
-━━━━━━━━━━━━━━━━━━━━
-
-🎉 Selamat kepada tim pemenang!
-
-🇮🇩 **MERDEKA!**`
-
-                )
-
-                .setFooter({
-
-                    text:
-                        "🇮🇩 Event Kemerdekaan 2026"
-
-                })
-
-                .setTimestamp();
-
-        // ==================================================
-        // UPDATE PESAN
-        // ==================================================
-
-        if (
-            this.message
-        ) {
-
-            try {
-
-                await this.message.edit({
-
-                    content:
-                        "🏆 **PANJAT PINANG SELESAI!**",
-
-                    embeds: [
-                        resultEmbed
-                    ],
-
-                    components: []
-
-                });
-
-            } catch (err) {
-
-                console.error(
-                    "❌ Gagal update hasil:",
-                    err
-                );
-
-            }
-
-        }
-
-        // ==================================================
-        // KIRIM KE PEROLEHAN POIN
-        // ==================================================
-
-        try {
-
-            const log =
+            const channel =
                 await this.client.channels.fetch(
                     process.env.LOG_CHANNEL
                 );
 
-            await log.send({
 
-                embeds: [
+            let description;
 
-                    new EmbedBuilder()
 
-                        .setColor("#F1C40F")
+            if (oldOwner) {
 
-                        .setTitle(
-                            "🏗️ PEROLEHAN POIN — PANJAT PINANG"
-                        )
+                description =
 
-                        .setDescription(
-
-`${winningName} **MENANG!**
-
-🏆 **+5 Poin**
-
-${winners}
+`⚔️ **${username}** berhasil merebut posisi Paskibraka!
 
 ━━━━━━━━━━━━━━━━━━━━
 
-${losingName} **KALAH!**
+👤 **Pemain**
+${username}
 
-💀 **-5 Poin**
+🇮🇩 **Posisi**
+Paskibraka ${slotIndex + 1}
 
-${losers}
+⚔️ **Direbut dari**
+${oldOwner.username}
 
-🇮🇩 Panjat Pinang selesai!`
+💰 **Reward**
++10 poin / jam`;
 
-                        )
+            } else {
 
-                        .setTimestamp()
+                description =
 
+`🇮🇩 **${username}** bergabung menjadi Paskibraka!
+
+━━━━━━━━━━━━━━━━━━━━
+
+👤 **Pemain**
+${username}
+
+🇮🇩 **Posisi**
+Paskibraka ${slotIndex + 1}
+
+💰 **Reward**
++10 poin / jam`;
+
+            }
+
+
+            const embed =
+                new EmbedBuilder()
+
+                    .setColor("#D90429")
+
+                    .setTitle(
+                        "🇮🇩 PASKIBRAKA"
+                    )
+
+                    .setDescription(
+                        description
+                    )
+
+                    .setFooter({
+
+                        text:
+                            "Event Kemerdekaan 2026"
+
+                    })
+
+                    .setTimestamp();
+
+
+            await channel.send({
+
+                embeds: [
+                    embed
                 ]
 
             });
@@ -1568,89 +656,262 @@ ${losers}
         } catch (err) {
 
             console.error(
-                "❌ Gagal mengirim Perolehan Poin:",
+                "❌ Paskibraka log error:",
                 err
             );
 
         }
 
-        // ==================================================
-        // RESET SETELAH SELESAI
-        // ==================================================
+    }
 
-        setTimeout(async () => {
 
-    this.teams.merah = [];
-    this.teams.biru = [];
+    // ==================================================
+    // BAGI REWARD
+    // ==================================================
 
-    this.progress.merah = 0;
-    this.progress.biru = 0;
+    async giveRewards() {
 
-    this.active = false;
-    this.registering = false;
+        console.log(
+            "🇮🇩 Membagikan reward Paskibraka..."
+        );
 
-    try {
 
-        if (this.message) {
+        for (
+            let i = 0;
+            i < this.slots.length;
+            i++
+        ) {
 
-            await this.message.edit({
+            const slot =
+                this.slots[i];
 
-                content: null,
 
-                embeds: [
-                    this.buildPanelEmbed()
-                ],
+            if (!slot)
+                continue;
 
-                components: [
-                    new ActionRowBuilder()
-                        .addComponents(
 
-                            new ButtonBuilder()
+            try {
 
-                                .setCustomId(
-                                    "panjat_start"
-                                )
+                const user =
+                    database.addPoint(
 
-                                .setEmoji("🏗️")
+                        slot.id,
 
-                                .setLabel(
-                                    "Mulai Panjat Pinang"
-                                )
+                        slot.username,
 
-                                .setStyle(
-                                    ButtonStyle.Success
-                                )
+                        10
 
-                        )
-                ]
+                    );
 
-            });
+
+                database.saveUsers();
+
+
+                console.log(
+                    `🇮🇩 ${slot.username} mendapat +10 poin.`
+                );
+
+
+                // ======================
+                // LOG REWARD
+                // ======================
+
+                if (
+                    process.env.LOG_CHANNEL
+                ) {
+
+                    const channel =
+                        await this.client.channels.fetch(
+                            process.env.LOG_CHANNEL
+                        );
+
+
+                    const embed =
+                        new EmbedBuilder()
+
+                            .setColor("#2ECC71")
+
+                            .setTitle(
+                                "🎖️ REWARD PASKIBRAKA"
+                            )
+
+                            .setDescription(
+
+`🇮🇩 **${slot.username}** berhasil bertahan sebagai Paskibraka!
+
+━━━━━━━━━━━━━━━━━━━━
+
+🥇 **Posisi**
+Paskibraka ${i + 1}
+
+💰 **Reward**
+**+10 Poin**
+
+⏰ **Masa Tugas**
+1 Jam
+
+🏆 **Total Poin**
+**${user.points} Poin**
+
+━━━━━━━━━━━━━━━━━━━━
+
+🔥 Pertahankan posisimu!`
+
+                            )
+
+                            .setFooter({
+
+                                text:
+                                    "🇮🇩 Event Kemerdekaan 2026"
+
+                            })
+
+                            .setTimestamp();
+
+
+                    await channel.send({
+
+                        embeds: [
+                            embed
+                        ]
+
+                    });
+
+                }
+
+            } catch (err) {
+
+                console.error(
+                    `❌ Gagal memberi reward ${slot.username}:`,
+                    err
+                );
+
+            }
 
         }
 
-    } catch (err) {
 
-        console.error(
-            "❌ Gagal mengembalikan panel Panjat:",
-            err
+        // ==================================================
+        // SIMPAN WAKTU REWARD
+        // ==================================================
+
+        database.events.paskibraka.lastReward =
+            Date.now();
+
+        database.saveEvents();
+
+
+        // ==================================================
+        // UPDATE PANEL
+        // ==================================================
+
+        await this.updatePanel();
+
+    }
+
+
+    // ==================================================
+    // START
+    // ==================================================
+
+    async start() {
+
+        console.log(
+            "🇮🇩 Panjat Module → Paskibraka Loaded"
+        );
+
+
+        // ======================
+        // LOAD DATA
+        // ======================
+
+        this.loadData();
+
+
+        // ======================
+        // PANEL
+        // ======================
+
+        await this.updatePanel();
+
+
+        // ======================
+        // HENTIKAN TIMER LAMA
+        // ======================
+
+        if (
+            this.rewardInterval
+        ) {
+
+            clearInterval(
+                this.rewardInterval
+            );
+
+        }
+
+
+        // ======================
+        // CEK REWARD SETIAP MENIT
+        // ======================
+
+        this.rewardInterval =
+            setInterval(
+
+                async () => {
+
+                    try {
+
+                        const lastReward =
+                            database.events
+                                .paskibraka
+                                .lastReward || Date.now();
+
+
+                        const elapsed =
+                            Date.now() -
+                            lastReward;
+
+
+                        // ======================
+                        // SUDAH 1 JAM
+                        // ======================
+
+                        if (
+                            elapsed >=
+                            60 * 60 * 1000
+                        ) {
+
+                            await this.giveRewards();
+
+                        }
+
+                    } catch (err) {
+
+                        console.error(
+                            "❌ Paskibraka timer error:",
+                            err
+                        );
+
+                    }
+
+                },
+
+                60 * 1000
+
+            );
+
+
+        console.log(
+            "⏰ Paskibraka reward: +10 poin setiap 1 jam."
         );
 
     }
 
-}, 10000);
-
-    }
-
-    // ==================================================
-    // END OF CLASS
-    // ==================================================
-
 }
+
 
 // ==================================================
 // EXPORT
 // ==================================================
 
-module.exports = PanjatPinang;
-
-
+module.exports = Panjat;
