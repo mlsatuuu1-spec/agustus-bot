@@ -80,7 +80,7 @@ Bot akan memilih target secara
 **30 detik** untuk bertahan
 
 ❌ Jika berhasil ditahan:
-Pencuri kehilangan **10 poin**
+Pencuri kehilangan **-20 poin**
 
 ━━━━━━━━━━━━━━━━━━━━
 
