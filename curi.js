@@ -74,7 +74,7 @@ Bot akan memilih target secara
 💰 **HADIAH & RISIKO**
 
 💰 Berhasil mencuri:
-**hingga 20 poin**
+**hingga 25 poin**
 
 🛡️ Target punya:
 **30 detik** untuk bertahan
@@ -87,7 +87,7 @@ Pencuri kehilangan **10 poin**
 ⏱️ **COOLDOWN**
 
 🥷 Bisa mencuri lagi setiap
-**30 menit**
+**10 menit**
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -311,11 +311,11 @@ Pencuri kehilangan **10 poin**
             );
 
         // ==================================================
-        // MINIMAL 10 POIN
+        // MINIMAL 25 POIN
         // ==================================================
 
         if (
-            (thief.points || 0) < 10
+            (thief.points || 0) < 25
         ) {
 
             return interaction.reply({
@@ -348,7 +348,7 @@ Pencuri kehilangan **10 poin**
                 }
 
                 if (
-                    (user.points || 0) < 10
+                    (user.points || 0) < 25
                 ) {
 
                     return false;
@@ -448,7 +448,7 @@ const target =
 
         const amount =
             Math.min(
-                20,
+                25,
                 target.points
             );
 
@@ -718,7 +718,7 @@ pencurian akan berhasil.`
             return interaction.reply({
 
                 content:
-                    "🛡️ Hanya target yang bisa menahan pencurian ini.",
+                    "🛡️ Bukan kamu anying yang dicuri.",
 
                 ephemeral: true
 
@@ -742,7 +742,7 @@ pencurian akan berhasil.`
 
             theft.thiefUsername,
 
-            10
+            25
 
         );
 
@@ -764,7 +764,7 @@ pencurian akan berhasil.`
                 targetUsername:
                     theft.targetUsername,
 
-                amount: 20
+                amount: 25
 
             }
 
@@ -823,7 +823,7 @@ pencurian akan berhasil.`
 **${theft.thiefUsername}**
 
 💀 Hukuman pencuri:
-**-10 Poin**
+**-25 Poin**
 
 💰 Target kehilangan:
 **0 Poin**
@@ -1199,7 +1199,7 @@ ${data.targetUsername}
 ${data.thiefUsername}
 
 💀 **Hukuman**
-**-10 Poin**
+**-25 Poin**
 
 🛡️ **Korban**
 ${data.targetUsername}
