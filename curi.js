@@ -271,7 +271,7 @@ Pencuri kehilangan **-25 poin**
             ) || 0;
 
         const cooldownTime =
-            30 * 60 * 1000;
+            10 * 60 * 1000;
 
         if (
             now - lastSteal <
