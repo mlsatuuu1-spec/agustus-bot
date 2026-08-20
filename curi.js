@@ -87,7 +87,7 @@ Pencuri kehilangan **-25 poin**
 ⏱️ **COOLDOWN**
 
 🥷 Bisa mencuri lagi setiap
-**10 menit**
+**2 jam**
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -271,7 +271,7 @@ Pencuri kehilangan **-25 poin**
             ) || 0;
 
         const cooldownTime =
-            10 * 60 * 1000;
+            120 * 60 * 1000;
 
         if (
             now - lastSteal <
@@ -321,7 +321,7 @@ Pencuri kehilangan **-25 poin**
             return interaction.reply({
 
                 content:
-                    "❌ Kamu membutuhkan minimal **10 poin** untuk mencuri.",
+                    "❌ Kamu membutuhkan minimal **25 poin** untuk mencuri.",
 
                 ephemeral: true
 
